@@ -1,9 +1,9 @@
+"use client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowUpRight, Clock, MapPin, Zap } from "lucide-react"
 import { AttendanceModal } from "@/components/attendance-modal"
-;("use client")
 import * as React from "react"
 
 export default function DashboardPage() {
@@ -11,6 +11,13 @@ export default function DashboardPage() {
     isOpen: false,
     type: "in",
   })
+const SITE_ENABLED = false;
+
+if (!SITE_ENABLED) {
+  window.location.href = "/";
+  return null;
+}
+
 
   return (
     <div className="space-y-10">

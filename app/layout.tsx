@@ -9,9 +9,8 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 const _instrumentSerif = Instrument_Serif({ subsets: ["latin"], weight: ["400"] })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "Presence-web",
+  description: "created with netxjs and typescript",
   icons: {
     icon: [
       {

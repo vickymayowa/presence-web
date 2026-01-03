@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/use-toast"
+// import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 interface AttendanceModalProps {
@@ -24,7 +24,7 @@ interface AttendanceModalProps {
 }
 
 export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps) {
-  const { toast } = useToast()
+  // const { toast } = useToast()
   const [step, setStep] = React.useState<"details" | "verifying" | "success">("details")
   const [workMode, setWorkMode] = React.useState("on-site")
   const [location, setLocation] = React.useState("Headquarters - Main Office")
@@ -34,10 +34,10 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
     // Simulate biometric verification (Face ID/WebAuthn)
     setTimeout(() => {
       setStep("success")
-      toast({
-        title: type === "in" ? "Checked In Successfully" : "Checked Out Successfully",
-        description: `Verified via Biometrics at ${new Date().toLocaleTimeString()}`,
-      })
+      // toast({
+      //   title: type === "in" ? "Checked In Successfully" : "Checked Out Successfully",
+      //   description: `Verified via Biometrics at ${new Date().toLocaleTimeString()}`,
+      // })
     }, 2500)
   }
 

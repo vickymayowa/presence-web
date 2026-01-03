@@ -1,5 +1,5 @@
 import type React from "react"
-import { DashboardSidebar } from "@/components/ui/sidebar"
+// import { DashboardSidebar } from "@/components/ui/sidebar"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 
@@ -10,7 +10,7 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <DashboardSidebar />
+      {/* <DashboardSidebar /> */}
       <SidebarInset className="bg-background">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-4 border-b bg-background/80 px-6 backdrop-blur-md">
           <SidebarTrigger />
