@@ -5,7 +5,7 @@ import { ArrowUpRight, Globe, Shield, Zap } from "lucide-react"
 export default function Home() {
   return (
     <main className="min-h-screen selection:bg-primary selection:text-primary-foreground">
-      {/* Navigation */}
+
       <nav className="bg-background/80 backdrop-blur-md sticky top-0 z-50 border-b border-border/40">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between h-20">
           <div className="flex items-center gap-10">
