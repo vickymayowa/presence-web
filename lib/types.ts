@@ -1,0 +1,103 @@
+// Core Types for Presence Attendance System
+
+export type UserRole = 'ceo' | 'hr' | 'manager' | 'staff';
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  department: string;
+  position: string;
+  avatar?: string;
+  managerId?: string;
+  joinedAt: string;
+  phone?: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  userId: string;
+  date: string;
+  checkIn?: string;
+  checkOut?: string;
+  status: 'present' | 'absent' | 'late' | 'half-day' | 'leave' | 'holiday';
+  workMode: 'office' | 'remote' | 'hybrid';
+  location?: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
+  verificationMethod?: 'face-id' | 'nfc' | 'manual' | 'beacon';
+  notes?: string;
+  totalHours?: number;
+}
+
+export interface LeaveRequest {
+  id: string;
+  userId: string;
+  type: 'annual' | 'sick' | 'personal' | 'maternity' | 'paternity' | 'unpaid' | 'work-from-home';
+  startDate: string;
+  endDate: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectionReason?: string;
+  createdAt: string;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  managerId: string;
+  description?: string;
+  headCount: number;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  read: boolean;
+  createdAt: string;
+  actionUrl?: string;
+}
+
+export interface WorkSchedule {
+  id: string;
+  userId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  workMode: 'office' | 'remote' | 'hybrid';
+  isFlexible: boolean;
+}
+
+export interface OvertimeRequest {
+  id: string;
+  userId: string;
+  date: string;
+  hours: number;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approvedBy?: string;
+  approvedAt?: string;
+}
+
+export interface CompanyStats {
+  totalEmployees: number;
+  presentToday: number;
+  onLeave: number;
+  remote: number;
+  averageAttendance: number;
+  pendingRequests: number;
+}
+
+export interface TeamMember extends User {
+  todayStatus?: AttendanceRecord;
+  monthlyAttendance?: number;
+}
