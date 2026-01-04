@@ -162,8 +162,8 @@ function StaffDashboard({
               <Button
                 size="lg"
                 className={`flex-1 h-24 rounded-2xl flex flex-col items-start p-6 gap-2 group ${isCheckedIn
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-green-600 hover:bg-green-700 text-white"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-green-600 hover:bg-green-700 text-white"
                   }`}
                 onClick={() => onCheckAction(isCheckedIn ? "out" : "in")}
               >
@@ -452,7 +452,7 @@ function HRDashboard() {
             ].map((alert, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30">
                 <div className={`mt-0.5 ${alert.type === 'late' ? 'text-orange-500' :
-                    alert.type === 'leave' ? 'text-blue-500' : 'text-muted-foreground'
+                  alert.type === 'leave' ? 'text-blue-500' : 'text-muted-foreground'
                   }`}>
                   <AlertCircle className="size-4" />
                 </div>
@@ -552,9 +552,9 @@ function ManagerDashboard({ userId }: { userId: string }) {
                   <Badge
                     variant="secondary"
                     className={`text-[10px] uppercase font-bold ${attendance?.status === 'present' ? 'bg-green-100 text-green-700' :
-                        attendance?.status === 'late' ? 'bg-orange-100 text-orange-700' :
-                          attendance?.status === 'leave' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-700'
+                      attendance?.status === 'late' ? 'bg-orange-100 text-orange-700' :
+                        attendance?.status === 'leave' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-700'
                       }`}
                   >
                     {attendance?.status || 'absent'}
