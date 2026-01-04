@@ -12,3 +12,197 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// =========================
+// ENUMS
+// =========================
+
+enum UserRole {
+  ceo
+  hr
+  manager
+  staff
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+  half_day
+  leave
+  holiday
+}
+
+enum WorkMode {
+  office
+  remote
+  hybrid
+}
+
+enum VerificationMethod {
+  face_id
+  nfc
+  manual
+  beacon
+}
+
+enum LeaveType {
+  annual
+  sick
+  personal
+  maternity
+  paternity
+  unpaid
+  work_from_home
+}
+
+enum RequestStatus {
+  pending
+  approved
+  rejected
+}
+
+enum NotificationType {
+  info
+  warning
+  success
+  error
+}
+
+// =========================
+// MODELS
+// =========================
+
+model User {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  firstName  String
+  lastName   String
+  role       UserRole
+  department String
+  position   String
+  avatar     String?
+  phone      String?
+  joinedAt   DateTime
+
+  managerId    String?
+  manager      User?   @relation("UserManager", fields: [managerId], references: [id])
+  subordinates User[]  @relation("UserManager")
+
+  // ✅ ADD THIS
+  managedDepartments Department[]
+
+  attendanceRecords AttendanceRecord[]
+  leaveRequests     LeaveRequest[]
+  overtimeRequests  OvertimeRequest[]
+  workSchedules     WorkSchedule[]
+  notifications     Notification[]
+
+  approvedLeaves   LeaveRequest[]    @relation("LeaveApprover")
+  approvedOvertime OvertimeRequest[] @relation("OvertimeApprover")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AttendanceRecord {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  date               DateTime
+  checkIn            DateTime?
+  checkOut           DateTime?
+  status             AttendanceStatus
+  workMode           WorkMode
+  verificationMethod VerificationMethod?
+  notes              String?
+  totalHours         Float?
+
+  location Json?
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([date])
+}
+
+model LeaveRequest {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  type      LeaveType
+  startDate DateTime
+  endDate   DateTime
+  reason    String
+  status    RequestStatus
+
+  approvedBy      String?
+  approver        User?     @relation("LeaveApprover", fields: [approvedBy], references: [id])
+  approvedAt      DateTime?
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+
+model Department {
+  id   String @id @default(uuid())
+  name String @unique
+
+  managerId String
+  manager   User   @relation(fields: [managerId], references: [id])
+
+  description String?
+  headCount   Int
+
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  actionUrl String?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+}
+
+model WorkSchedule {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  dayOfWeek  Int
+  startTime  String
+  endTime    String
+  workMode   WorkMode
+  isFlexible Boolean
+
+  @@unique([userId, dayOfWeek])
+}
+
+model OvertimeRequest {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  date   DateTime
+  hours  Float
+  reason String
+  status RequestStatus
+
+  approvedBy String?
+  approver   User?     @relation("OvertimeApprover", fields: [approvedBy], references: [id])
+  approvedAt DateTime?
+
+  createdAt DateTime @default(now())
+}
