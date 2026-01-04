@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -26,9 +26,9 @@ import { attendanceRecords, users, getUserById } from "@/lib/mock-data"
 
 export default function AttendancePage() {
     const { user } = useAuth()
-    const [searchQuery, setSearchQuery] = React.useState("")
-    const [statusFilter, setStatusFilter] = React.useState("all")
-    const [dateFilter, setDateFilter] = React.useState("today")
+    const [searchQuery, setSearchQuery] = useState("")
+    const [statusFilter, setStatusFilter] = useState("all")
+    const [dateFilter, setDateFilter] = useState("today")
 
     if (!user) return null
 
