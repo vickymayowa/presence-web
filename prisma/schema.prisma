@@ -10,7 +10,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // =========================
@@ -73,9 +74,21 @@ enum NotificationType {
 // MODELS
 // =========================
 
+model Company {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  logo        String?
+  users       User[]
+  departments Department[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
 model User {
   id         String   @id @default(uuid())
   email      String   @unique
+  password   String
   firstName  String
   lastName   String
   role       UserRole
@@ -83,13 +96,15 @@ model User {
   position   String
   avatar     String?
   phone      String?
-  joinedAt   DateTime
+  joinedAt   DateTime @default(now())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   managerId    String?
   manager      User?   @relation("UserManager", fields: [managerId], references: [id])
   subordinates User[]  @relation("UserManager")
 
-  // ✅ ADD THIS
   managedDepartments Department[]
 
   attendanceRecords AttendanceRecord[]
@@ -97,6 +112,7 @@ model User {
   overtimeRequests  OvertimeRequest[]
   workSchedules     WorkSchedule[]
   notifications     Notification[]
+  pushSubscriptions PushSubscription[]
 
   approvedLeaves   LeaveRequest[]    @relation("LeaveApprover")
   approvedOvertime OvertimeRequest[] @relation("OvertimeApprover")
@@ -104,6 +120,17 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
+
 
 model AttendanceRecord {
   id     String @id @default(uuid())
@@ -151,6 +178,9 @@ model LeaveRequest {
 model Department {
   id   String @id @default(uuid())
   name String @unique
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   managerId String
   manager   User   @relation(fields: [managerId], references: [id])
