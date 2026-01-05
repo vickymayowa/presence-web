@@ -20,6 +20,7 @@ export default function RegisterPage() {
         confirmPassword: "",
         department: "",
         role: "",
+        companyName: "",
     })
     const [showPassword, setShowPassword] = React.useState(false)
     const [isLoading, setIsLoading] = React.useState(false)
@@ -70,6 +71,7 @@ export default function RegisterPage() {
         { value: "staff", label: "Staff Member" },
         { value: "manager", label: "Manager" },
         { value: "hr", label: "HR Personnel" },
+        { value: "ceo", label: "CEO / Business Owner" },
     ]
 
     if (success) {
@@ -205,87 +207,103 @@ export default function RegisterPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="password" className="text-sm font-medium">
-                                    Password
-                                </Label>
-                                <div className="relative">
+                            {formData.role === "ceo" && (
+                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <Label htmlFor="companyName" className="text-sm font-medium">
+                                        Company Name
+                                    </Label>
                                     <Input
-                                        id="password"
-                                        type={showPassword ? "text" : "password"}
-                                        placeholder="Min. 8 characters"
-                                        value={formData.password}
-                                        onChange={(e) => handleChange("password", e.target.value)}
-                                        className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors pr-12"
+                                        id="companyName"
+                                        placeholder="Acme Corp"
+                                        value={formData.companyName}
+                                        onChange={(e) => handleChange("companyName", e.target.value)}
+                                        className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
                                         required
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                                    Confirm password
-                                </Label>
-                                <Input
-                                    id="confirmPassword"
-                                    type="password"
-                                    placeholder="Repeat password"
-                                    value={formData.confirmPassword}
-                                    onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                                    className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
-                                    required
-                                />
-                            </div>
-
-                            {error && (
-                                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-                                    {error}
                                 </div>
                             )}
 
-                            <Button
-                                type="submit"
-                                className="w-full h-12 rounded-xl text-base font-semibold mt-2"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Creating account...
-                                    </>
-                                ) : (
-                                    "Create account"
-                                )}
-                            </Button>
-                        </form>
+                        <div className="space-y-2">
+                            <Label htmlFor="password" className="text-sm font-medium">
+                                Password
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Min. 8 characters"
+                                    value={formData.password}
+                                    onChange={(e) => handleChange("password", e.target.value)}
+                                    className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors pr-12"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </div>
 
-                        <p className="text-center text-sm text-muted-foreground mt-6">
-                            Already have an account?{" "}
-                            <Link href="/auth/login" className="text-foreground font-medium hover:underline">
-                                Sign in
-                            </Link>
-                        </p>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                                Confirm password
+                            </Label>
+                            <Input
+                                id="confirmPassword"
+                                type="password"
+                                placeholder="Repeat password"
+                                value={formData.confirmPassword}
+                                onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                                className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
+                                required
+                            />
+                        </div>
 
-                        <p className="text-center text-xs text-muted-foreground/60 mt-4">
-                            By creating an account, you agree to our{" "}
-                            <Link href="/terms" className="hover:underline">
-                                Terms of Service
-                            </Link>{" "}
-                            and{" "}
-                            <Link href="/privacy" className="hover:underline">
-                                Privacy Policy
-                            </Link>
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-        </main>
+                        {error && (
+                            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        <Button
+                            type="submit"
+                            className="w-full h-12 rounded-xl text-base font-semibold mt-2"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Creating account...
+                                </>
+                            ) : (
+                                "Create account"
+                            )}
+                        </Button>
+                    </form>
+
+                    <p className="text-center text-sm text-muted-foreground mt-6">
+                        Already have an account?{" "}
+                        <Link href="/auth/login" className="text-foreground font-medium hover:underline">
+                            Sign in
+                        </Link>
+                    </p>
+
+                    <p className="text-center text-xs text-muted-foreground/60 mt-4">
+                        By creating an account, you agree to our{" "}
+                        <Link href="/terms" className="hover:underline">
+                            Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link href="/privacy" className="hover:underline">
+                            Privacy Policy
+                        </Link>
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
+        </main >
     )
 }

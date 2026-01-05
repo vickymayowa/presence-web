@@ -22,12 +22,16 @@ import {
     Save,
     Loader2,
     Check,
-    AlertTriangle
+    AlertTriangle,
+    Link as LinkIcon
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
+import { usePushNotifications } from "@/hooks/use-push-notifications"
+import { toast } from "sonner"
 
 export default function SettingsPage() {
     const { user } = useAuth()
+    const { permission, subscribe } = usePushNotifications()
     const [isSaving, setIsSaving] = React.useState(false)
     const [savedSection, setSavedSection] = React.useState<string | null>(null)
 
@@ -77,7 +81,18 @@ export default function SettingsPage() {
                         <ToggleSetting
                             label="Push Notifications"
                             description="Get push notifications on your devices"
-                            defaultChecked={true}
+                            defaultChecked={permission === 'granted'}
+                            onChange={async (checked) => {
+                                if (checked) {
+                                    try {
+                                        await subscribe();
+                                        toast.success("Push notifications enabled!");
+                                    } catch (err) {
+                                        toast.error("Failed to enable notifications. Please check browser permissions.");
+                                        console.error(err);
+                                    }
+                                }
+                            }}
                         />
                         <Separator />
                         <ToggleSetting
@@ -254,6 +269,30 @@ export default function SettingsPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-6">
+                            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4">
+                                <div>
+                                    <p className="font-medium text-primary flex items-center gap-2">
+                                        <LinkIcon className="size-4" />
+                                        Staff Registration Link
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Share this link with your employees to join your organization.
+                                    </p>
+                                </div>
+                                <div className="flex w-full md:w-auto gap-2">
+                                    <code className="px-3 py-1 bg-secondary rounded-lg text-xs flex items-center">
+                                        {typeof window !== 'undefined' ? `${window.location.origin}/join/presence-corp` : '/join/presence-corp'}
+                                    </code>
+                                    <Button size="sm" variant="outline" className="rounded-lg" onClick={() => {
+                                        const url = `${window.location.origin}/join/presence-corp`;
+                                        navigator.clipboard.writeText(url);
+                                        toast.success("Link copied to clipboard!");
+                                    }}>
+                                        Copy
+                                    </Button>
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label>Work Start Time</Label>
@@ -427,11 +466,13 @@ export default function SettingsPage() {
 function ToggleSetting({
     label,
     description,
-    defaultChecked
+    defaultChecked,
+    onChange
 }: {
     label: string
     description: string
     defaultChecked: boolean
+    onChange?: (checked: boolean) => void
 }) {
     const [checked, setChecked] = React.useState(defaultChecked)
 
@@ -444,7 +485,11 @@ function ToggleSetting({
             <button
                 role="switch"
                 aria-checked={checked}
-                onClick={() => setChecked(!checked)}
+                onClick={() => {
+                    const newChecked = !checked;
+                    setChecked(newChecked);
+                    onChange?.(newChecked);
+                }}
                 className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-secondary'
                     }`}
             >
