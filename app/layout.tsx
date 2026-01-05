@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { PWARegistration } from "@/components/pwa-registration"
+import { ProgressBar } from "@/components/progress-bar"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -42,9 +43,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased text-foreground bg-background">
-        {children}
-        <Analytics />
-        <PWARegistration />
+        <AuthProvider>
+          <ProgressBar />
+          {children}
+          <Analytics />
+          <PWARegistration />
+        </AuthProvider>
       </body>
     </html>
   )

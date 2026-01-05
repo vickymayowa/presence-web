@@ -95,215 +95,173 @@ export default function RegisterPage() {
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center p-6 py-12 bg-gradient-to-br from-background via-secondary/20 to-background">
-            {/* Background decoration */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="space-y-2">
+                <h1 className="text-3xl font-serif">Create account</h1>
+                <p className="text-muted-foreground font-light">
+                    Join your team and track your progress on Presence
+                </p>
             </div>
 
-            <div className="w-full max-w-md relative z-10">
-                {/* Back link */}
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 group"
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                        <Label htmlFor="firstName" className="text-sm font-medium">
+                            First name
+                        </Label>
+                        <Input
+                            id="firstName"
+                            placeholder="John"
+                            value={formData.firstName}
+                            onChange={(e) => handleChange("firstName", e.target.value)}
+                            className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-all"
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="lastName" className="text-sm font-medium">
+                            Last name
+                        </Label>
+                        <Input
+                            id="lastName"
+                            placeholder="Doe"
+                            value={formData.lastName}
+                            onChange={(e) => handleChange("lastName", e.target.value)}
+                            className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-all"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium">
+                        Work email
+                    </Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@company.com"
+                        value={formData.email}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                        className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-all"
+                        required
+                    />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                        <Label htmlFor="department" className="text-sm font-medium">
+                            Department
+                        </Label>
+                        <Select onValueChange={(value) => handleChange("department", value)}>
+                            <SelectTrigger className="h-11 rounded-xl border-border/40 bg-secondary/30">
+                                <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {departments.map((dept) => (
+                                    <SelectItem key={dept} value={dept}>
+                                        {dept}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="role" className="text-sm font-medium">
+                            Role
+                        </Label>
+                        <Select onValueChange={(value) => handleChange("role", value)}>
+                            <SelectTrigger className="h-11 rounded-xl border-border/40 bg-secondary/30">
+                                <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {roles.map((role) => (
+                                    <SelectItem key={role.value} value={role.value}>
+                                        {role.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {formData.role === "ceo" && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <Label htmlFor="companyName" className="text-sm font-medium">
+                            Company Name
+                        </Label>
+                        <Input
+                            id="companyName"
+                            placeholder="Acme Corp"
+                            value={formData.companyName}
+                            onChange={(e) => handleChange("companyName", e.target.value)}
+                            className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-all"
+                            required
+                        />
+                    </div>
+                )}
+
+                <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-medium">
+                        Password
+                    </Label>
+                    <div className="relative">
+                        <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Min. 8 characters"
+                            value={formData.password}
+                            onChange={(e) => handleChange("password", e.target.value)}
+                            className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-all pr-12"
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                    </div>
+                </div>
+
+                {error && (
+                    <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2">
+                        <span className="size-1.5 rounded-full bg-destructive shrink-0" />
+                        {error}
+                    </div>
+                )}
+
+                <Button
+                    type="submit"
+                    className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/10 mt-2"
+                    disabled={isLoading}
                 >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    Back to home
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Creating account...
+                        </>
+                    ) : (
+                        "Create account"
+                    )}
+                </Button>
+            </form>
+
+            <p className="text-center text-sm text-muted-foreground pt-2">
+                Already have an account?{" "}
+                <Link href="/auth/login" className="text-foreground font-semibold hover:underline underline-offset-4">
+                    Sign in
                 </Link>
+            </p>
 
-                <Card className="border-border/40 bg-card/80 backdrop-blur-sm shadow-2xl">
-                    <CardHeader className="text-center pb-2">
-                        <div className="flex justify-center mb-4">
-                            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-primary-foreground">
-                                <ShieldCheck className="w-7 h-7" />
-                            </div>
-                        </div>
-                        <CardTitle className="text-3xl font-serif">Create account</CardTitle>
-                        <CardDescription className="text-base font-light">
-                            Join your team on Presence
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-2">
-                                    <Label htmlFor="firstName" className="text-sm font-medium">
-                                        First name
-                                    </Label>
-                                    <Input
-                                        id="firstName"
-                                        placeholder="John"
-                                        value={formData.firstName}
-                                        onChange={(e) => handleChange("firstName", e.target.value)}
-                                        className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="lastName" className="text-sm font-medium">
-                                        Last name
-                                    </Label>
-                                    <Input
-                                        id="lastName"
-                                        placeholder="Doe"
-                                        value={formData.lastName}
-                                        onChange={(e) => handleChange("lastName", e.target.value)}
-                                        className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-sm font-medium">
-                                    Work email
-                                </Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="you@company.com"
-                                    value={formData.email}
-                                    onChange={(e) => handleChange("email", e.target.value)}
-                                    className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
-                                    required
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-2">
-                                    <Label htmlFor="department" className="text-sm font-medium">
-                                        Department
-                                    </Label>
-                                    <Select onValueChange={(value) => handleChange("department", value)}>
-                                        <SelectTrigger className="h-11 rounded-xl border-border/40 bg-secondary/30">
-                                            <SelectValue placeholder="Select" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {departments.map((dept) => (
-                                                <SelectItem key={dept} value={dept}>
-                                                    {dept}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="role" className="text-sm font-medium">
-                                        Role
-                                    </Label>
-                                    <Select onValueChange={(value) => handleChange("role", value)}>
-                                        <SelectTrigger className="h-11 rounded-xl border-border/40 bg-secondary/30">
-                                            <SelectValue placeholder="Select" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {roles.map((role) => (
-                                                <SelectItem key={role.value} value={role.value}>
-                                                    {role.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            {formData.role === "ceo" && (
-                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <Label htmlFor="companyName" className="text-sm font-medium">
-                                        Company Name
-                                    </Label>
-                                    <Input
-                                        id="companyName"
-                                        placeholder="Acme Corp"
-                                        value={formData.companyName}
-                                        onChange={(e) => handleChange("companyName", e.target.value)}
-                                        className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
-                                        required
-                                    />
-                                </div>
-                            )}
-
-                            <div className="space-y-2">
-                                <Label htmlFor="password" className="text-sm font-medium">
-                                    Password
-                                </Label>
-                                <div className="relative">
-                                    <Input
-                                        id="password"
-                                        type={showPassword ? "text" : "password"}
-                                        placeholder="Min. 8 characters"
-                                        value={formData.password}
-                                        onChange={(e) => handleChange("password", e.target.value)}
-                                        className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors pr-12"
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                                    Confirm password
-                                </Label>
-                                <Input
-                                    id="confirmPassword"
-                                    type="password"
-                                    placeholder="Repeat password"
-                                    value={formData.confirmPassword}
-                                    onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                                    className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
-                                    required
-                                />
-                            </div>
-
-                            {error && (
-                                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-                                    {error}
-                                </div>
-                            )}
-
-                            <Button
-                                type="submit"
-                                className="w-full h-12 rounded-xl text-base font-semibold mt-2"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Creating account...
-                                    </>
-                                ) : (
-                                    "Create account"
-                                )}
-                            </Button>
-                        </form>
-
-                        <p className="text-center text-sm text-muted-foreground mt-6">
-                            Already have an account?{" "}
-                            <Link href="/auth/login" className="text-foreground font-medium hover:underline">
-                                Sign in
-                            </Link>
-                        </p>
-
-                        <p className="text-center text-xs text-muted-foreground/60 mt-4">
-                            By creating an account, you agree to our{" "}
-                            <Link href="/terms" className="hover:underline">
-                                Terms of Service
-                            </Link>{" "}
-                            and{" "}
-                            <Link href="/privacy" className="hover:underline">
-                                Privacy Policy
-                            </Link>
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-        </main >
+            <p className="text-center text-[10px] uppercase tracking-widest text-muted-foreground/40 pt-4 leading-loose">
+                By signing up, you agree to our{" "}
+                <Link href="/terms" className="hover:text-foreground underline underline-offset-2">Terms</Link> &{" "}
+                <Link href="/privacy" className="hover:text-foreground underline underline-offset-2">Privacy</Link>
+            </p>
+        </div>
+    )
+}
     )
 }
