@@ -17,7 +17,6 @@ export default function RegisterPage() {
         lastName: "",
         email: "",
         password: "",
-        confirmPassword: "",
         department: "",
         role: "",
         companyName: "",
@@ -34,11 +33,6 @@ export default function RegisterPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError("")
-
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match")
-            return
-        }
 
         if (formData.password.length < 8) {
             setError("Password must be at least 8 characters")
@@ -261,7 +255,5 @@ export default function RegisterPage() {
                 <Link href="/privacy" className="hover:text-foreground underline underline-offset-2">Privacy</Link>
             </p>
         </div>
-    )
-}
     )
 }

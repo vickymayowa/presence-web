@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { PWARegistration } from "@/components/pwa-registration"
 import { ProgressBar } from "@/components/progress-bar"
 import "./globals.css"
+import { AuthProvider } from "@/lib/auth-context"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
