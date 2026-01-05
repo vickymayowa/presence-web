@@ -28,41 +28,68 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
   const [step, setStep] = React.useState<"details" | "verifying" | "success">("details")
   const [workMode, setWorkMode] = React.useState("on-site")
   const [location, setLocation] = React.useState("Headquarters - Main Office")
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+  const [stream, setStream] = React.useState<MediaStream | null>(null)
 
-  const handleVerify = () => {
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } }
+      })
+      setStream(mediaStream)
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err)
+    }
+  }
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+  }
+
+  const handleVerify = async () => {
     setStep("verifying")
-    // Simulate biometric verification (Face ID/WebAuthn)
+    await startCamera()
+
+    // Simulate biometric verification (Face ID)
     setTimeout(() => {
       setStep("success")
-      // toast({
-      //   title: type === "in" ? "Checked In Successfully" : "Checked Out Successfully",
-      //   description: `Verified via Biometrics at ${new Date().toLocaleTimeString()}`,
-      // })
-    }, 2500)
+      stopCamera()
+    }, 4000)
   }
 
   const resetAndClose = () => {
+    stopCamera()
     onClose()
     setTimeout(() => setStep("details"), 300)
   }
 
+  React.useEffect(() => {
+    return () => stopCamera()
+  }, [])
+
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden border-none bg-background rounded-[2.5rem]">
+      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden border-none bg-background rounded-[2.5rem] shadow-2xl">
         <div className="relative">
           {/* Header Visual */}
-          <div className="h-32 bg-secondary/20 flex items-center justify-center border-b border-border/20">
+          <div className="h-32 bg-secondary/20 flex items-center justify-center border-b border-border/20 transition-all duration-700">
             <div
               className={cn(
                 "size-16 rounded-3xl flex items-center justify-center transition-all duration-500",
                 step === "verifying"
-                  ? "animate-pulse bg-primary/10"
+                  ? "bg-primary/10 scale-110"
                   : "bg-background shadow-sm border border-border/30",
               )}
             >
               {step === "details" && <ShieldCheck className="size-8 text-muted-foreground" />}
-              {step === "verifying" && <Scan className="size-8 text-primary animate-in zoom-in duration-300" />}
-              {step === "success" && <Check className="size-8 text-green-600 animate-in zoom-in duration-300" />}
+              {step === "verifying" && <Scan className="size-8 text-primary animate-pulse" />}
+              {step === "success" && <div className="size-16 rounded-3xl bg-green-500 flex items-center justify-center animate-in zoom-in duration-500"><Check className="size-8 text-white" /></div>}
             </div>
           </div>
 
@@ -70,13 +97,13 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
             <DialogHeader className="text-left space-y-2">
               <DialogTitle className="text-3xl font-serif">
                 {step === "details" && (type === "in" ? "Check In" : "Check Out")}
-                {step === "verifying" && "Verifying Presence"}
-                {step === "success" && "Verified"}
+                {step === "verifying" && "Biometric Identity"}
+                {step === "success" && "Identity Verified"}
               </DialogTitle>
               <DialogDescription className="text-base font-light">
-                {step === "details" && "Confirm your location and work mode to proceed with biometric verification."}
-                {step === "verifying" && "Position your face within the frame or provide your biometric signature."}
-                {step === "success" && `Successfully ${type === "in" ? "checked in" : "checked out"} for today.`}
+                {step === "details" && "Confirm your location and work mode to proceed with face verification."}
+                {step === "verifying" && "Scanning face. Please hold still and look at the camera."}
+                {step === "success" && `Welcome, you've successfully ${type === "in" ? "checked in" : "checked out"}.`}
               </DialogDescription>
             </DialogHeader>
 
@@ -126,54 +153,92 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
                     </p>
                   </div>
                   <Badge variant="outline" className="ml-auto bg-background text-[10px] tracking-tight py-0">
-                    UTC +1
+                    Active Session
                   </Badge>
                 </div>
               </div>
             )}
 
             {step === "verifying" && (
-              <div className="py-12 flex flex-col items-center justify-center space-y-8 animate-in fade-in zoom-in duration-700">
-                <div className="relative">
-                  <div className="size-48 rounded-[3rem] border-2 border-dashed border-primary/20 flex items-center justify-center overflow-hidden bg-secondary/10">
-                    <Fingerprint className="size-20 text-primary/40 animate-pulse" />
+              <div className="py-2 flex flex-col items-center justify-center space-y-6 animate-in fade-in duration-700">
+                <div className="relative size-64 overflow-hidden rounded-[3rem] border-2 border-primary/20 bg-black group">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover scale-x-[-1]"
+                  />
+
+                  {/* Face ID Overlay */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Corner Borders */}
+                    <div className="absolute top-8 left-8 size-12 border-t-2 border-l-2 border-primary/60 rounded-tl-2xl" />
+                    <div className="absolute top-8 right-8 size-12 border-t-2 border-r-2 border-primary/60 rounded-tr-2xl" />
+                    <div className="absolute bottom-8 left-8 size-12 border-b-2 border-l-2 border-primary/60 rounded-bl-2xl" />
+                    <div className="absolute bottom-8 right-8 size-12 border-b-2 border-r-2 border-primary/60 rounded-br-2xl" />
+
+                    {/* Scanning Line */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-scan shadow-[0_0_15px_rgba(var(--primary),0.8)]" />
+
+                    {/* Detection Points */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-48 border border-white/10 rounded-full animate-ping" />
                   </div>
-                  {/* Scanning Line Animation */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-primary/40 rounded-full animate-scan shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+
+                  {!stream && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-secondary/80 backdrop-blur-sm">
+                      <Loader2 className="size-8 text-primary animate-spin" />
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary animate-pulse">
-                  Biometric Scan in progress
-                </p>
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary animate-pulse">
+                    Analyzing Facial Biometrics
+                  </p>
+                  <div className="flex gap-1">
+                    <div className="size-1 rounded-full bg-primary/20 animate-bounce [animation-delay:-0.3s]" />
+                    <div className="size-1 rounded-full bg-primary/20 animate-bounce [animation-delay:-0.15s]" />
+                    <div className="size-1 rounded-full bg-primary/20 animate-bounce" />
+                  </div>
+                </div>
               </div>
             )}
 
             {step === "success" && (
-              <div className="py-8 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-secondary/20 space-y-1">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Mode</p>
-                    <p className="text-sm font-medium capitalize">{workMode}</p>
+              <div className="py-4 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <div className="p-6 rounded-3xl bg-secondary/10 border border-border/20 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Verified Identity</p>
+                      <p className="text-lg font-medium">Lukas Mitchell</p>
+                    </div>
+                    <Badge className="bg-green-500/10 text-green-600 border-green-500/20 rounded-lg">High Confidence</Badge>
                   </div>
-                  <div className="p-4 rounded-2xl bg-secondary/20 space-y-1">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Status</p>
-                    <p className="text-sm font-medium text-green-600">Verified</p>
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/10">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Check-in Time</p>
+                      <p className="text-sm font-medium">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Location</p>
+                      <p className="text-sm font-medium truncate">{location}</p>
+                    </div>
                   </div>
                 </div>
                 <Button
-                  variant="outline"
-                  className="w-full h-14 rounded-2xl text-lg font-serif bg-transparent"
+                  className="w-full h-14 rounded-2xl text-lg font-serif"
                   onClick={resetAndClose}
                 >
-                  Back to Dashboard
+                  Continue to Feed
                 </Button>
               </div>
             )}
 
             {step === "details" && (
               <DialogFooter className="flex-col sm:flex-col gap-3">
-                <Button size="lg" className="w-full h-14 rounded-2xl text-lg font-serif group" onClick={handleVerify}>
-                  Confirm & Verify
-                  <Fingerprint className="ml-2 size-5 group-hover:scale-110 transition-transform" />
+                <Button size="lg" className="w-full h-14 rounded-2xl text-lg font-serif group shadow-xl shadow-primary/20" onClick={handleVerify}>
+                  Face ID Check-in
+                  <Scan className="ml-2 size-5 group-hover:scale-110 transition-transform" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -184,6 +249,7 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
                 </Button>
               </DialogFooter>
             )}
+
           </div>
         </div>
       </DialogContent>

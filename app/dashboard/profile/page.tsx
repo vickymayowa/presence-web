@@ -20,7 +20,9 @@ import {
     Shield,
     Clock,
     Bell,
-    Key
+    Key,
+    Scan,
+    CheckCircle2
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import type { UserRole } from "@/lib/types"
@@ -254,6 +256,24 @@ export default function ProfilePage() {
                                     Configure how you receive alerts and updates
                                 </p>
                             </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-border/30 hover:shadow-md transition-shadow cursor-pointer">
+                    <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                                <Scan className="size-6 text-orange-600" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="font-semibold mb-1">Face ID Enrollment</h3>
+                                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                    <span className="size-2 rounded-full bg-green-500" />
+                                    Active • Last updated 2 weeks ago
+                                </p>
+                            </div>
+                            <Button variant="ghost" size="sm" className="rounded-lg text-xs">Update</Button>
                         </div>
                     </CardContent>
                 </Card>
