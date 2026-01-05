@@ -48,7 +48,7 @@ export default function RegisterPage() {
         setIsLoading(true)
 
         // Simulate registration
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        await new Promise((resolve) => setTimeout(resolve, 3500))
 
         setSuccess(true)
         setTimeout(() => {
@@ -223,87 +223,87 @@ export default function RegisterPage() {
                                 </div>
                             )}
 
-                        <div className="space-y-2">
-                            <Label htmlFor="password" className="text-sm font-medium">
-                                Password
-                            </Label>
-                            <div className="relative">
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-sm font-medium">
+                                    Password
+                                </Label>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="Min. 8 characters"
+                                        value={formData.password}
+                                        onChange={(e) => handleChange("password", e.target.value)}
+                                        className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors pr-12"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                                    Confirm password
+                                </Label>
                                 <Input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="Min. 8 characters"
-                                    value={formData.password}
-                                    onChange={(e) => handleChange("password", e.target.value)}
-                                    className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors pr-12"
+                                    id="confirmPassword"
+                                    type="password"
+                                    placeholder="Repeat password"
+                                    value={formData.confirmPassword}
+                                    onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                                    className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
                                     required
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                >
-                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                                Confirm password
-                            </Label>
-                            <Input
-                                id="confirmPassword"
-                                type="password"
-                                placeholder="Repeat password"
-                                value={formData.confirmPassword}
-                                onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                                className="h-11 rounded-xl border-border/40 bg-secondary/30 focus:bg-background transition-colors"
-                                required
-                            />
-                        </div>
-
-                        {error && (
-                            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-                                {error}
-                            </div>
-                        )}
-
-                        <Button
-                            type="submit"
-                            className="w-full h-12 rounded-xl text-base font-semibold mt-2"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Creating account...
-                                </>
-                            ) : (
-                                "Create account"
+                            {error && (
+                                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                                    {error}
+                                </div>
                             )}
-                        </Button>
-                    </form>
 
-                    <p className="text-center text-sm text-muted-foreground mt-6">
-                        Already have an account?{" "}
-                        <Link href="/auth/login" className="text-foreground font-medium hover:underline">
-                            Sign in
-                        </Link>
-                    </p>
+                            <Button
+                                type="submit"
+                                className="w-full h-12 rounded-xl text-base font-semibold mt-2"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Creating account...
+                                    </>
+                                ) : (
+                                    "Create account"
+                                )}
+                            </Button>
+                        </form>
 
-                    <p className="text-center text-xs text-muted-foreground/60 mt-4">
-                        By creating an account, you agree to our{" "}
-                        <Link href="/terms" className="hover:underline">
-                            Terms of Service
-                        </Link>{" "}
-                        and{" "}
-                        <Link href="/privacy" className="hover:underline">
-                            Privacy Policy
-                        </Link>
-                    </p>
-                </CardContent>
-            </Card>
-        </div>
+                        <p className="text-center text-sm text-muted-foreground mt-6">
+                            Already have an account?{" "}
+                            <Link href="/auth/login" className="text-foreground font-medium hover:underline">
+                                Sign in
+                            </Link>
+                        </p>
+
+                        <p className="text-center text-xs text-muted-foreground/60 mt-4">
+                            By creating an account, you agree to our{" "}
+                            <Link href="/terms" className="hover:underline">
+                                Terms of Service
+                            </Link>{" "}
+                            and{" "}
+                            <Link href="/privacy" className="hover:underline">
+                                Privacy Policy
+                            </Link>
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
         </main >
     )
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
     Calendar,
     LayoutDashboard,
@@ -39,8 +39,15 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth-context"
 import type { UserRole } from "@/lib/types"
 
+type NavItem = {
+    icon: React.ElementType
+    label: string
+    href: string
+    badge?: number
+}
+
 // Navigation items by role
-const navigationConfig: Record<UserRole, { general: typeof navItemBase[]; admin?: typeof navItemBase[] }> = {
+const navigationConfig: Record<UserRole, { general: NavItem[]; admin?: NavItem[] }> = {
     staff: {
         general: [
             { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
@@ -114,7 +121,13 @@ const roleColors: Record<UserRole, string> = {
 
 export function DashboardSidebar() {
     const pathname = usePathname()
+    const router = useRouter()
     const { user, logout } = useAuth()
+
+    const handleLogout = () => {
+        logout()
+        router.push("/auth/login")
+    }
 
     if (!user) return null
 
@@ -224,7 +237,7 @@ export function DashboardSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             tooltip="Logout"
-                            onClick={logout}
+                            onClick={handleLogout}
                             className="text-muted-foreground hover:text-destructive"
                         >
                             <LogOut className="size-4" />

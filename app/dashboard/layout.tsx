@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AuthProvider, useAuth } from "@/lib/auth-context"
 import { Bell, Search } from "lucide-react"
+import { GlobalSearch } from "@/components/global-search"
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -59,15 +60,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               </Badge>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               {/* Search */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-xl text-muted-foreground hover:text-foreground"
-              >
-                <Search className="size-5" />
-              </Button>
+              <GlobalSearch />
 
               {/* Notifications */}
               <Button
