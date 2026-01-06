@@ -6,6 +6,8 @@ import { PWARegistration } from "@/components/pwa-registration"
 import { ProgressBar } from "@/components/progress-bar"
 import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
+import { DemoProvider } from "@/lib/demo-context"
+import { DemoModeToggle } from "@/components/demo-mode-toggle"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -44,12 +46,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased text-foreground bg-background">
-        <AuthProvider>
-          <ProgressBar />
-          {children}
-          <Analytics />
-          <PWARegistration />
-        </AuthProvider>
+        <DemoProvider>
+          <AuthProvider>
+            <ProgressBar />
+            {children}
+            <Analytics />
+            <PWARegistration />
+            <DemoModeToggle />
+          </AuthProvider>
+        </DemoProvider>
       </body>
     </html>
   )

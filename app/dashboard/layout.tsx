@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { AuthProvider, useAuth } from "@/lib/auth-context"
 import { Bell, Search } from "lucide-react"
 import { GlobalSearch } from "@/components/global-search"
+import { BuiltWithPresence } from "@/components/built-with-presence"
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -94,6 +95,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </SidebarInset>
+      <BuiltWithPresence />
     </SidebarProvider>
   )
 }
