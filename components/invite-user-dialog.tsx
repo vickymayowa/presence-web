@@ -49,8 +49,8 @@ export function InviteUserDialog({
         const link = `https://presence.io/${companySlug}/join?token=${Math.random().toString(36).substring(7)}`
         setInviteLink(link)
 
-        toast.success("Invitation created", {
-            description: `An email has been sent to ${email}`
+        toast.success("Invite Link Generated", {
+            description: email ? `Email sent to ${email}` : "Link ready to copy"
         })
 
         setIsLoading(false)
@@ -92,7 +92,7 @@ export function InviteUserDialog({
                 {!inviteLink ? (
                     <form onSubmit={handleInvite} className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email address</Label>
+                            <Label htmlFor="email">Email address <span className="text-muted-foreground text-xs font-normal">(Optional)</span></Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -100,7 +100,6 @@ export function InviteUserDialog({
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="rounded-xl"
-                                required
                             />
                         </div>
                         <div className="space-y-2">
@@ -120,6 +119,9 @@ export function InviteUserDialog({
                         <DialogFooter className="pt-4">
                             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-xl">
                                 Cancel
+                            </Button>
+                            <Button type="button" variant="secondary" onClick={handleInvite} disabled={isLoading} className="rounded-xl">
+                                Generate Link
                             </Button>
                             <Button type="submit" disabled={isLoading || !email} className="rounded-xl">
                                 {isLoading ? (
