@@ -1,5 +1,21 @@
 // Mock Data for Presence Attendance System
-import type { User, AttendanceRecord, LeaveRequest, Department, Notification, CompanyStats } from './types';
+import type { User, AttendanceRecord, LeaveRequest, Department, Notification, CompanyStats, Company } from './types';
+
+// Companies
+export const companies: Company[] = [
+    {
+        id: 'comp-001',
+        name: 'Presence Inc.',
+        slug: 'presence',
+        logo: '/logo.svg' // Placeholder
+    },
+    {
+        id: 'comp-002',
+        name: 'Acme Corp',
+        slug: 'acme',
+        logo: ''
+    }
+];
 
 // Users data
 export const users: User[] = [
@@ -14,6 +30,7 @@ export const users: User[] = [
         avatar: '',
         joinedAt: '2020-01-15',
         phone: '+1 555-0100',
+        companyId: 'comp-001',
     },
     {
         id: 'hr-001',
@@ -27,6 +44,7 @@ export const users: User[] = [
         managerId: 'ceo-001',
         joinedAt: '2021-03-20',
         phone: '+1 555-0101',
+        companyId: 'comp-001',
     },
     {
         id: 'mgr-001',
@@ -40,6 +58,7 @@ export const users: User[] = [
         managerId: 'ceo-001',
         joinedAt: '2021-06-10',
         phone: '+1 555-0102',
+        companyId: 'comp-001',
     },
     {
         id: 'mgr-002',
@@ -53,6 +72,7 @@ export const users: User[] = [
         managerId: 'ceo-001',
         joinedAt: '2021-09-15',
         phone: '+1 555-0103',
+        companyId: 'comp-001',
     },
     {
         id: 'staff-001',
@@ -66,6 +86,7 @@ export const users: User[] = [
         managerId: 'mgr-001',
         joinedAt: '2022-01-10',
         phone: '+1 555-0104',
+        companyId: 'comp-001',
     },
     {
         id: 'staff-002',
@@ -79,6 +100,7 @@ export const users: User[] = [
         managerId: 'mgr-001',
         joinedAt: '2022-03-15',
         phone: '+1 555-0105',
+        companyId: 'comp-001',
     },
     {
         id: 'staff-003',
@@ -92,6 +114,7 @@ export const users: User[] = [
         managerId: 'mgr-002',
         joinedAt: '2022-05-20',
         phone: '+1 555-0106',
+        companyId: 'comp-001',
     },
     {
         id: 'staff-004',
@@ -105,6 +128,7 @@ export const users: User[] = [
         managerId: 'mgr-001',
         joinedAt: '2022-07-01',
         phone: '+1 555-0107',
+        companyId: 'comp-001',
     },
     {
         id: 'staff-005',
@@ -118,7 +142,21 @@ export const users: User[] = [
         managerId: 'mgr-002',
         joinedAt: '2022-09-10',
         phone: '+1 555-0108',
+        companyId: 'comp-001',
     },
+    {
+        id: 'acme-admin',
+        email: 'admin@acme.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'ceo',
+        department: 'Executive',
+        position: 'CEO',
+        avatar: '',
+        joinedAt: '2023-01-01',
+        phone: '+1 555-9999',
+        companyId: 'comp-002',
+    }
 ];
 
 // Helper to get today's date

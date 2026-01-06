@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/lib/auth-context"
 import { users, departments, getTodayAttendance } from "@/lib/mock-data"
 import type { UserRole } from "@/lib/types"
+import { InviteUserDialog } from "@/components/invite-user-dialog"
 
 const roleColors: Record<UserRole, string> = {
     ceo: 'bg-purple-100 text-purple-700',
@@ -46,8 +47,11 @@ export default function EmployeesPage() {
 
     if (!user) return null
 
-    // Filter employees
+    // Filter employees by Company and other criteria
     const filteredEmployees = users.filter(employee => {
+        // Ensure employee belongs to the same company
+        if (employee.companyId !== user.companyId) return false;
+
         const matchesSearch =
             `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
             employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -75,7 +79,7 @@ export default function EmployeesPage() {
                 <div>
                     <h1 className="text-3xl md:text-4xl font-serif tracking-tight">Employees</h1>
                     <p className="text-muted-foreground font-light mt-1">
-                        Manage all employees across the organization ({users.length} total)
+                        Manage all employees across the organization ({filteredEmployees.length} total)
                     </p>
                 </div>
                 <div className="flex gap-3">
@@ -83,10 +87,7 @@ export default function EmployeesPage() {
                         <Download className="size-4 mr-2" />
                         Export
                     </Button>
-                    <Button className="rounded-xl">
-                        <UserPlus className="size-4 mr-2" />
-                        Add Employee
-                    </Button>
+                    <InviteUserDialog companySlug={user.companyId === 'comp-001' ? 'presence' : 'acme'} />
                 </div>
             </div>
 
@@ -225,9 +226,9 @@ export default function EmployeesPage() {
                                                         <Badge
                                                             variant="outline"
                                                             className={`text-[10px] uppercase font-bold ${attendance.status === 'present' ? 'bg-green-50 text-green-600 border-green-200' :
-                                                                    attendance.status === 'late' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                                                                        attendance.status === 'leave' ? 'bg-blue-50 text-blue-600 border-blue-200' :
-                                                                            'bg-gray-50 text-gray-600'
+                                                                attendance.status === 'late' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                                                    attendance.status === 'leave' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                                                        'bg-gray-50 text-gray-600'
                                                                 }`}
                                                         >
                                                             {attendance.status}

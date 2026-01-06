@@ -2,6 +2,13 @@
 
 export type UserRole = 'ceo' | 'hr' | 'manager' | 'staff';
 
+export interface Company {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -14,6 +21,7 @@ export interface User {
   managerId?: string;
   joinedAt: string;
   phone?: string;
+  companyId: string;
 }
 
 export interface AttendanceRecord {

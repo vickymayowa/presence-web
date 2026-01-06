@@ -76,6 +76,9 @@ export default function ProfilePage() {
         year: 'numeric',
     })
 
+    const companyName = user.companyId === 'comp-001' ? 'Presence Inc.' : 'Acme Corp'; // Simplified for demo
+    const companySlug = user.companyId === 'comp-001' ? 'presence' : 'acme';
+
     const handleSave = async () => {
         setIsSaving(true)
         await new Promise(resolve => setTimeout(resolve, 1500))
@@ -126,7 +129,7 @@ export default function ProfilePage() {
                             <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1.5">
                                     <Building2 className="size-4" />
-                                    {user.department}
+                                    {companyName} • {user.department}
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                     <Calendar className="size-4" />
