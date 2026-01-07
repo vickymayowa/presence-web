@@ -21,25 +21,37 @@ import {
     Users
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { users, attendanceRecords, getUsersByManager, getTodayAttendance } from "@/lib/mock-data"
+import { useUsersQuery, useAttendanceQuery } from "@/lib/queries/presence-queries"
 
 export default function TeamPage() {
     const { user } = useAuth()
     const [searchQuery, setSearchQuery] = React.useState("")
 
+    const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
+    const { data: attendanceRecords = [], isLoading: isAttendanceLoading } = useAttendanceQuery()
+
     if (!user) return null
+    if (isUsersLoading || isAttendanceLoading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    const today = new Date().toISOString().split('T')[0]
+    const getTodayAttendance = (userId: string) => attendanceRecords.find(r => r.userId === userId && r.date === today)
 
     // Get team members based on role
     const getTeamMembers = () => {
         if (user.role === 'manager') {
-            return getUsersByManager(user.id)
+            return allUsers.filter(u => u.managerId === user.id)
         }
         // HR and CEO see all employees
-        return users.filter(u => u.id !== user.id)
+        return allUsers.filter(u => u.id !== user.id)
     }
 
     const teamMembers = getTeamMembers()
-    const today = new Date().toISOString().split('T')[0]
 
     // Filter by search
     const filteredMembers = teamMembers.filter(member =>
@@ -161,8 +173,8 @@ export default function TeamPage() {
                             <CardContent className="p-0">
                                 {/* Top gradient bar */}
                                 <div className={`h-1 ${status === 'present' ? 'bg-green-500' :
-                                        status === 'late' ? 'bg-orange-500' :
-                                            status === 'leave' ? 'bg-blue-500' : 'bg-gray-300'
+                                    status === 'late' ? 'bg-orange-500' :
+                                        status === 'leave' ? 'bg-blue-500' : 'bg-gray-300'
                                     }`} />
 
                                 <div className="p-5">

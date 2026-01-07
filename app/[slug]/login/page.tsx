@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
 import { ArrowLeft, Eye, EyeOff, Loader2, Building2 } from "lucide-react"
-import { companies } from "@/lib/mock-data"
+import { useCompanyQuery } from "@/lib/queries/presence-queries"
 
 export default function CompanyLoginPage() {
     const router = useRouter()
@@ -18,13 +18,21 @@ export default function CompanyLoginPage() {
     // Extract slug ensuring it's a string, handling array case if needed
     const slug = typeof params.slug === 'string' ? params.slug : Array.isArray(params.slug) ? params.slug[0] : '';
 
+    const { data: company, isLoading: isCompanyLoading } = useCompanyQuery(slug)
+
     const [email, setEmail] = React.useState("")
     const [password, setPassword] = React.useState("")
     const [showPassword, setShowPassword] = React.useState(false)
     const [isLoading, setIsLoading] = React.useState(false)
     const [error, setError] = React.useState("")
 
-    const company = companies.find(c => c.slug === slug)
+    if (isCompanyLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] animate-pulse">
+                <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
+            </div>
+        )
+    }
 
     if (!company && slug) {
         return (

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Building2, Sparkles, CheckCircle2, ArrowRight, Loader2, Mail } from "lucide-react"
-import { companies } from "@/lib/mock-data"
+import { useCompanyQuery } from "@/lib/queries/presence-queries"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -20,6 +20,8 @@ export default function JoinCompanyPage() {
     const slug = typeof params.slug === 'string' ? params.slug : Array.isArray(params.slug) ? params.slug[0] : '';
     const token = searchParams.get('token');
 
+    const { data: company, isLoading: isCompanyLoading } = useCompanyQuery(slug)
+
     const [isLoading, setIsLoading] = React.useState(false)
     const [step, setStep] = React.useState<'verify' | 'details' | 'success'>('verify')
     const [email, setEmail] = React.useState("")
@@ -27,7 +29,13 @@ export default function JoinCompanyPage() {
     const [lastName, setLastName] = React.useState("")
     const [password, setPassword] = React.useState("")
 
-    const company = companies.find(c => c.slug === slug)
+    if (isCompanyLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
+            </div>
+        )
+    }
 
     if (!company) {
         return (

@@ -12,6 +12,7 @@ export const queryKeys = {
     attendance: ['attendance'] as const,
     leaves: ['leaves'] as const,
     notifications: (userId: string) => ['notifications', userId] as const,
+    company: (slug: string) => ['company', slug] as const,
 };
 
 // --- QUERIES ---
@@ -57,6 +58,18 @@ export function useLeavesQuery() {
             if (!res.ok) throw new Error('Failed to fetch leaves');
             return res.json() as Promise<LeaveRequest[]>;
         },
+    });
+}
+
+export function useCompanyQuery(slug: string) {
+    return useQuery({
+        queryKey: queryKeys.company(slug),
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/companies/${slug}`);
+            if (!res.ok) throw new Error('Failed to fetch company');
+            return res.json() as Promise<any>; // Assuming a Company type exists or generic
+        },
+        enabled: !!slug,
     });
 }
 
