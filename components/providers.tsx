@@ -7,7 +7,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { store } from '@/lib/store/store';
 import { queryClient } from '@/lib/query-client';
 import { AuthProvider } from '@/lib/auth-context';
-import { DemoProvider } from '@/lib/demo-context';
 import { ThemeProvider } from 'next-themes';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -15,12 +14,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ReduxProvider store={store}>
             <QueryClientProvider client={queryClient}>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                    <DemoProvider>
-                        <AuthProvider>
-                            {children}
-                            <ReactQueryDevtools initialIsOpen={false} />
-                        </AuthProvider>
-                    </DemoProvider>
+                    <AuthProvider>
+                        {children}
+                        <ReactQueryDevtools initialIsOpen={false} />
+                    </AuthProvider>
                 </ThemeProvider>
             </QueryClientProvider>
         </ReduxProvider>

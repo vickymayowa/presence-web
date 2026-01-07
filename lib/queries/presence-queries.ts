@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useDemo } from '../demo-context';
-import * as mockData from '../mock-data';
 import type { User, AttendanceRecord, LeaveRequest, CompanyStats, Notification } from '../types';
+
+// API Base URL - could be from env
+const API_BASE = '/api';
 
 // Query Keys
 export const queryKeys = {
@@ -13,47 +14,37 @@ export const queryKeys = {
     notifications: (userId: string) => ['notifications', userId] as const,
 };
 
-// Generic helper to simulate API delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 // --- QUERIES ---
 
 export function useUsersQuery() {
-    const { isDemoMode } = useDemo();
-
     return useQuery({
         queryKey: queryKeys.users,
         queryFn: async () => {
-            await delay(800);
-            if (isDemoMode) return mockData.users;
-            // Real API: return fetch('/api/users').then(res => res.json());
-            return [];
+            const res = await fetch(`${API_BASE}/users`);
+            if (!res.ok) throw new Error('Failed to fetch users');
+            return res.json() as Promise<User[]>;
         },
     });
 }
 
 export function useCompanyStatsQuery() {
-    const { isDemoMode } = useDemo();
-
     return useQuery({
         queryKey: queryKeys.stats,
         queryFn: async () => {
-            await delay(600);
-            if (isDemoMode) return mockData.companyStats;
-            throw new Error('Production stats not implemented');
+            const res = await fetch(`${API_BASE}/stats`);
+            if (!res.ok) throw new Error('Failed to fetch stats');
+            return res.json() as Promise<CompanyStats>;
         },
     });
 }
 
 export function useAttendanceQuery() {
-    const { isDemoMode } = useDemo();
-
     return useQuery({
         queryKey: queryKeys.attendance,
         queryFn: async () => {
-            await delay(700);
-            if (isDemoMode) return mockData.attendanceRecords;
-            return [];
+            const res = await fetch(`${API_BASE}/attendance`);
+            if (!res.ok) throw new Error('Failed to fetch attendance');
+            return res.json() as Promise<AttendanceRecord[]>;
         },
     });
 }
@@ -62,18 +53,16 @@ export function useAttendanceQuery() {
 
 export function useCheckInMutation() {
     const queryClient = useQueryClient();
-    const { isDemoMode } = useDemo();
 
     return useMutation({
         mutationFn: async (record: Partial<AttendanceRecord>) => {
-            await delay(1000);
-            if (isDemoMode) {
-                // Mock update logic
-                console.log('Mock Check-in:', record);
-                return { success: true, record };
-            }
-            // Real API call here
-            return { success: true };
+            const res = await fetch(`${API_BASE}/attendance/check-in`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(record),
+            });
+            if (!res.ok) throw new Error('Failed to check in');
+            return res.json();
         },
         onSuccess: () => {
             // Invalidate and refetch attendance after check-in
@@ -84,16 +73,16 @@ export function useCheckInMutation() {
 
 export function useRequestLeaveMutation() {
     const queryClient = useQueryClient();
-    const { isDemoMode } = useDemo();
 
     return useMutation({
         mutationFn: async (request: Partial<LeaveRequest>) => {
-            await delay(1200);
-            if (isDemoMode) {
-                console.log('Mock Leave Request:', request);
-                return { success: true, request };
-            }
-            return { success: true };
+            const res = await fetch(`${API_BASE}/leaves/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(request),
+            });
+            if (!res.ok) throw new Error('Failed to request leave');
+            return res.json();
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.leaves });

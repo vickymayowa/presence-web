@@ -6,7 +6,6 @@ import { PWARegistration } from "@/components/pwa-registration"
 import { ProgressBar } from "@/components/progress-bar"
 import "./globals.css"
 import { Providers } from "@/components/providers"
-import { DemoModeToggle } from "@/components/demo-mode-toggle"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -50,7 +49,6 @@ export default function RootLayout({
           {children}
           <Analytics />
           <PWARegistration />
-          <DemoModeToggle />
         </Providers>
       </body>
     </html>
