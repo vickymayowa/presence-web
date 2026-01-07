@@ -5,8 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { PWARegistration } from "@/components/pwa-registration"
 import { ProgressBar } from "@/components/progress-bar"
 import "./globals.css"
-import { AuthProvider } from "@/lib/auth-context"
-import { DemoProvider } from "@/lib/demo-context"
+import { Providers } from "@/components/providers"
 import { DemoModeToggle } from "@/components/demo-mode-toggle"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -44,17 +43,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased text-foreground bg-background">
-        <DemoProvider>
-          <AuthProvider>
-            <ProgressBar />
-            {children}
-            <Analytics />
-            <PWARegistration />
-            <DemoModeToggle />
-          </AuthProvider>
-        </DemoProvider>
+        <Providers>
+          <ProgressBar />
+          {children}
+          <Analytics />
+          <PWARegistration />
+          <DemoModeToggle />
+        </Providers>
       </body>
     </html>
   )

@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import type { User, UserRole } from './types';
 import { users } from './mock-data';
 import { useDemo } from './demo-context';
+import { useAppDispatch } from './store/hooks';
+import { setUser as setReduxUser, setLoading as setReduxLoading } from './store/slices/authSlice';
 
 interface AuthContextType {
     user: User | null;
@@ -16,6 +18,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+    const dispatch = useAppDispatch();
     const { isDemoMode } = useDemo();
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -27,47 +30,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const savedUser = localStorage.getItem(storageKey);
         if (savedUser) {
             try {
-                // In a real app, you might validate the token here
-                setUser(JSON.parse(savedUser));
+                const parsedUser = JSON.parse(savedUser);
+                setUser(parsedUser);
+                dispatch(setReduxUser(parsedUser));
             } catch {
                 localStorage.removeItem(storageKey);
-                setUser(null); // Ensure user is null if parsing fails
+                setUser(null);
+                dispatch(setReduxUser(null));
             }
         } else {
-            setUser(null); // Ensure user is null if no session for this mode & strict reload
+            setUser(null);
+            dispatch(setReduxUser(null));
         }
         setIsLoading(false);
-    }, [isDemoMode, storageKey]);
+        dispatch(setReduxLoading(false));
+    }, [isDemoMode, storageKey, dispatch]);
 
     const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
         setIsLoading(true);
+        dispatch(setReduxLoading(true));
 
         try {
             if (isDemoMode) {
-                // --- DEMO MODE LOGIC ---
-                // Simulate API latency
                 await new Promise(resolve => setTimeout(resolve, 800));
-
-                // Find user by email (mock authentication)
-                // In demo mode, we can accept any password for simplicity, or hardcode it
                 const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
                 if (foundUser) {
                     setUser(foundUser);
+                    dispatch(setReduxUser(foundUser));
                     localStorage.setItem(storageKey, JSON.stringify(foundUser));
                     return { success: true };
                 }
                 return { success: false, error: 'Invalid email. Try ceo@presence.io' };
             } else {
-                // --- PRODUCTION MODE LOGIC ---
-                // Call real API
-                // const res = await fetch('/api/auth/login', {
-                //     method: 'POST',
-                //     body: JSON.stringify({ email, password }),
-                //     headers: { 'Content-Type': 'application/json' }
-                // });
-                // const data = await res.json();
-
                 // Placeholder until API is ready
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return { success: false, error: 'Production database not connected yet.' };
@@ -76,22 +71,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return { success: false, error: 'An unexpected error occurred' };
         } finally {
             setIsLoading(false);
+            dispatch(setReduxLoading(false));
         }
     };
 
     const logout = () => {
         setUser(null);
+        dispatch(setReduxUser(null));
         localStorage.removeItem(storageKey);
-        // Optional: Call logout API if in production
     };
 
-    // For demo purposes: switch between roles
     const switchRole = (role: UserRole) => {
-        if (!isDemoMode) return; // Only allow role switching in demo mode
-
+        if (!isDemoMode) return;
         const userWithRole = users.find(u => u.role === role);
         if (userWithRole) {
             setUser(userWithRole);
+            dispatch(setReduxUser(userWithRole));
             localStorage.setItem(storageKey, JSON.stringify(userWithRole));
         }
     };
