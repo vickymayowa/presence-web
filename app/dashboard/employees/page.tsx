@@ -21,7 +21,7 @@ import {
     Users
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { users, departments, getTodayAttendance } from "@/lib/mock-data"
+import { useUsersQuery, useAttendanceQuery } from "@/lib/queries/presence-queries"
 import type { UserRole } from "@/lib/types"
 import { InviteUserDialog } from "@/components/invite-user-dialog"
 
@@ -45,10 +45,27 @@ export default function EmployeesPage() {
     const [departmentFilter, setDepartmentFilter] = React.useState("all")
     const [roleFilter, setRoleFilter] = React.useState("all")
 
+    const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
+    const { data: attendanceRecords = [], isLoading: isAttendanceLoading } = useAttendanceQuery()
+
     if (!user) return null
+    if (isUsersLoading || isAttendanceLoading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    // Derive departments from users
+    const allDepartments = Array.from(new Set(allUsers.map(u => u.department))).map(name => ({
+        id: name.toLowerCase(),
+        name,
+        headCount: allUsers.filter(u => u.department === name).length
+    }))
 
     // Filter employees by Company and other criteria
-    const filteredEmployees = users.filter(employee => {
+    const filteredEmployees = allUsers.filter(employee => {
         // Ensure employee belongs to the same company
         if (employee.companyId !== user.companyId) return false;
 
@@ -70,7 +87,7 @@ export default function EmployeesPage() {
         }
         acc[emp.department].push(emp)
         return acc
-    }, {} as Record<string, typeof users>)
+    }, {} as Record<string, any[]>)
 
     return (
         <div className="space-y-8">
@@ -112,7 +129,7 @@ export default function EmployeesPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All Departments</SelectItem>
-                                    {departments.map(dept => (
+                                    {allDepartments.map(dept => (
                                         <SelectItem key={dept.id} value={dept.name}>{dept.name}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -137,7 +154,7 @@ export default function EmployeesPage() {
 
             {/* Department Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {departments.map(dept => (
+                {allDepartments.map(dept => (
                     <Card
                         key={dept.id}
                         className={`border-border/30 cursor-pointer hover:shadow-md transition-all ${departmentFilter === dept.name ? 'ring-2 ring-primary' : ''
@@ -180,7 +197,8 @@ export default function EmployeesPage() {
                         <CardContent className="p-0">
                             <div className="divide-y divide-border/30">
                                 {employees.map(employee => {
-                                    const attendance = getTodayAttendance(employee.id)
+                                    const today = new Date().toISOString().split('T')[0]
+                                    const attendance = attendanceRecords.find(r => r.userId === employee.id && r.date === today)
 
                                     return (
                                         <div
@@ -198,9 +216,9 @@ export default function EmployeesPage() {
                                                         <h3 className="font-medium">{employee.firstName} {employee.lastName}</h3>
                                                         <Badge
                                                             variant="secondary"
-                                                            className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0 ${roleColors[employee.role]}`}
+                                                            className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0 ${roleColors[employee.role as UserRole]}`}
                                                         >
-                                                            {roleLabels[employee.role]}
+                                                            {roleLabels[employee.role as UserRole]}
                                                         </Badge>
                                                     </div>
                                                     <p className="text-sm text-muted-foreground">{employee.position}</p>

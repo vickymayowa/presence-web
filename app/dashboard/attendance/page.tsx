@@ -22,7 +22,7 @@ import {
     MapPin
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { attendanceRecords, users, getUserById } from "@/lib/mock-data"
+import { useAttendanceQuery, useUsersQuery } from "@/lib/queries/presence-queries"
 
 export default function AttendancePage() {
     const { user } = useAuth()
@@ -30,15 +30,25 @@ export default function AttendancePage() {
     const [statusFilter, setStatusFilter] = useState("all")
     const [dateFilter, setDateFilter] = useState("today")
 
+    const { data: attendanceRecords = [], isLoading: isAttendanceLoading } = useAttendanceQuery()
+    const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
+
     if (!user) return null
+    if (isAttendanceLoading || isUsersLoading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    const getUserById = (id: string) => allUsers.find(u => u.id === id)
 
     // Get attendance records based on role
     const getRelevantRecords = () => {
         if (user.role === 'staff') {
-            // Staff only sees their own records
             return attendanceRecords.filter(r => r.userId === user.id)
         }
-        // Other roles see all records
         return attendanceRecords
     }
 

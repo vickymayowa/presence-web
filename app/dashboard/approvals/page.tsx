@@ -29,7 +29,7 @@ import {
     MessageSquare
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { leaveRequests, users, getUserById } from "@/lib/mock-data"
+import { useLeavesQuery, useUsersQuery } from "@/lib/queries/presence-queries"
 import type { LeaveRequest } from "@/lib/types"
 
 const leaveTypeConfig: Record<string, { icon: any; color: string; label: string }> = {
@@ -49,13 +49,24 @@ export default function ApprovalsPage() {
     const [isProcessing, setIsProcessing] = React.useState(false)
     const [filter, setFilter] = React.useState<'all' | 'pending' | 'processed'>('pending')
 
+    const { data: leaveRequests = [], isLoading: isLeavesLoading } = useLeavesQuery()
+    const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
+
     if (!user) return null
+    if (isLeavesLoading || isUsersLoading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    const getUserById = (id: string) => allUsers.find(u => u.id === id)
 
     // Get requests that need this user's approval
     const getPendingRequests = () => {
         if (user.role === 'manager') {
-            // Get requests from team members
-            const teamMembers = users.filter(u => u.managerId === user.id)
+            const teamMembers = allUsers.filter(u => u.managerId === user.id)
             return leaveRequests.filter(r =>
                 teamMembers.some(m => m.id === r.userId)
             )
@@ -66,15 +77,15 @@ export default function ApprovalsPage() {
         return []
     }
 
-    const allRequests = getPendingRequests()
-    const pendingRequests = allRequests.filter(r => r.status === 'pending')
-    const processedRequests = allRequests.filter(r => r.status !== 'pending')
+    const allRelevantRequests = getPendingRequests()
+    const pendingRequests = allRelevantRequests.filter(r => r.status === 'pending')
+    const processedRequests = allRelevantRequests.filter(r => r.status !== 'pending')
 
     const displayRequests = filter === 'pending'
         ? pendingRequests
         : filter === 'processed'
             ? processedRequests
-            : allRequests
+            : allRelevantRequests
 
     const handleAction = async () => {
         if (!selectedRequest) return
@@ -144,7 +155,7 @@ export default function ApprovalsPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">Total</p>
-                                <p className="text-2xl font-serif mt-1">{allRequests.length}</p>
+                                <p className="text-2xl font-serif mt-1">{allRelevantRequests.length}</p>
                             </div>
                             <FileText className="size-8 text-muted-foreground/30" />
                         </div>
@@ -191,8 +202,8 @@ export default function ApprovalsPage() {
                                                 <Badge
                                                     variant="outline"
                                                     className={`gap-1 ${request.status === 'pending' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                                                            request.status === 'approved' ? 'bg-green-50 text-green-600 border-green-200' :
-                                                                'bg-red-50 text-red-600 border-red-200'
+                                                        request.status === 'approved' ? 'bg-green-50 text-green-600 border-green-200' :
+                                                            'bg-red-50 text-red-600 border-red-200'
                                                         }`}
                                                 >
                                                     {request.status === 'pending' && <AlertCircle className="size-3" />}

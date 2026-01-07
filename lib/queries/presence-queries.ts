@@ -49,6 +49,17 @@ export function useAttendanceQuery() {
     });
 }
 
+export function useLeavesQuery() {
+    return useQuery({
+        queryKey: queryKeys.leaves,
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/leaves`);
+            if (!res.ok) throw new Error('Failed to fetch leaves');
+            return res.json() as Promise<LeaveRequest[]>;
+        },
+    });
+}
+
 // --- MUTATIONS ---
 
 export function useCheckInMutation() {

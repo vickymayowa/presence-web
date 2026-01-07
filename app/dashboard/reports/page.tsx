@@ -18,16 +18,26 @@ import {
     Building2
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { companyStats, departments, users } from "@/lib/mock-data"
+import { useCompanyStatsQuery, useUsersQuery } from "@/lib/queries/presence-queries"
 
 export default function ReportsPage() {
     const { user } = useAuth()
     const [timeRange, setTimeRange] = React.useState("month")
     const [departmentFilter, setDepartmentFilter] = React.useState("all")
 
-    if (!user) return null
+    const { data: companyStats, isLoading: isStatsLoading } = useCompanyStatsQuery()
+    const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
 
-    // Mock data for charts
+    if (!user) return null
+    if (isStatsLoading || isUsersLoading || !companyStats) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    // Mock data for charts (staying mock for now as we don't have historical API)
     const weeklyData = [
         { day: 'Mon', present: 92, late: 5, absent: 3 },
         { day: 'Tue', present: 95, late: 3, absent: 2 },
@@ -36,10 +46,13 @@ export default function ReportsPage() {
         { day: 'Fri', present: 85, late: 10, absent: 5 },
     ]
 
-    const departmentStats = departments.map(dept => ({
-        name: dept.name,
-        attendance: Math.floor(Math.random() * 15) + 85,
-        employees: dept.headCount,
+    // Derive departments from users
+    const allDepartments = Array.from(new Set(allUsers.map(u => u.department)))
+
+    const departmentStats = allDepartments.map(name => ({
+        name,
+        attendance: Math.floor(Math.random() * 15) + 85, // Random for now
+        employees: allUsers.filter(u => u.department === name).length,
     }))
 
     return (
@@ -228,7 +241,7 @@ export default function ReportsPage() {
                         <CardDescription>Highest attendance scores</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
-                        {users.slice(0, 5).map((person, i) => (
+                        {allUsers.slice(0, 5).map((person, i) => (
                             <div
                                 key={person.id}
                                 className={`flex items-center justify-between p-4 hover:bg-secondary/20 transition-colors ${i !== 4 ? 'border-b border-border/30' : ''
@@ -283,8 +296,8 @@ export default function ReportsPage() {
                                     <Badge
                                         variant="outline"
                                         className={`${dept.attendance >= 95 ? 'bg-green-50 text-green-600 border-green-200' :
-                                                dept.attendance >= 90 ? 'bg-blue-50 text-blue-600 border-blue-200' :
-                                                    'bg-orange-50 text-orange-600 border-orange-200'
+                                            dept.attendance >= 90 ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                                'bg-orange-50 text-orange-600 border-orange-200'
                                             }`}
                                     >
                                         {dept.attendance}%
@@ -293,7 +306,7 @@ export default function ReportsPage() {
                                 <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                                     <div
                                         className={`h-full rounded-full transition-all ${dept.attendance >= 95 ? 'bg-green-500' :
-                                                dept.attendance >= 90 ? 'bg-blue-500' : 'bg-orange-500'
+                                            dept.attendance >= 90 ? 'bg-blue-500' : 'bg-orange-500'
                                             }`}
                                         style={{ width: `${dept.attendance}%` }}
                                     />

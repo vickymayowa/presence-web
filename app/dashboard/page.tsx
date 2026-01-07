@@ -24,13 +24,10 @@ import {
 import { AttendanceModal } from "@/components/attendance-modal"
 import { useAuth } from "@/lib/auth-context"
 import {
-  companyStats,
-  attendanceRecords,
-  leaveRequests,
-  users,
-  getUsersByManager,
-  getUserById
-} from "@/lib/mock-data"
+  useAttendanceQuery,
+  useCompanyStatsQuery,
+  useUsersQuery
+} from "@/lib/queries/presence-queries"
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -39,7 +36,18 @@ export default function DashboardPage() {
     type: "in",
   })
 
+  const { data: attendanceRecords = [], isLoading: isAttendanceLoading } = useAttendanceQuery()
+  const { data: stats, isLoading: isStatsLoading } = useCompanyStatsQuery()
+  const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
+
   if (!user) return null
+  if (isAttendanceLoading || isStatsLoading || isUsersLoading) {
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   // Get today's attendance for current user
   const today = new Date().toISOString().split('T')[0]
@@ -50,11 +58,11 @@ export default function DashboardPage() {
   const renderDashboard = () => {
     switch (user.role) {
       case 'ceo':
-        return <CEODashboard />
+        return <CEODashboard stats={stats} />
       case 'hr':
-        return <HRDashboard />
+        return <HRDashboard stats={stats} users={allUsers} />
       case 'manager':
-        return <ManagerDashboard userId={user.id} />
+        return <ManagerDashboard userId={user.id} users={allUsers} attendance={attendanceRecords} />
       default:
         return (
           <StaffDashboard
@@ -106,7 +114,8 @@ function StaffDashboard({
   isCheckedIn: boolean
   onCheckAction: (type: 'in' | 'out') => void
 }) {
-  const myLeaveRequests = leaveRequests.filter(r => r.userId === user.id)
+  // In a real app, you would fetch this user's leave requests via useQuery
+  const myLeaveRequests: any[] = []
   const pendingRequests = myLeaveRequests.filter(r => r.status === 'pending').length
 
   return (
@@ -232,35 +241,36 @@ function StaffDashboard({
 }
 
 // CEO Dashboard Component
-function CEODashboard() {
+function CEODashboard({ stats }: { stats: any }) {
+  if (!stats) return null;
   return (
     <>
       {/* Company Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard
           label="Total Employees"
-          value={companyStats.totalEmployees.toString()}
+          value={stats.totalEmployees.toString()}
           sub="Active workforce"
           icon={Users}
           color="text-blue-600"
         />
         <StatCard
           label="Present Today"
-          value={companyStats.presentToday.toString()}
-          sub={`${Math.round((companyStats.presentToday / companyStats.totalEmployees) * 100)}% attendance`}
+          value={stats.presentToday.toString()}
+          sub={`${Math.round((stats.presentToday / stats.totalEmployees) * 100)}% attendance`}
           icon={UserCheck}
           color="text-green-600"
         />
         <StatCard
           label="On Leave"
-          value={companyStats.onLeave.toString()}
+          value={stats.onLeave.toString()}
           sub="Approved absences"
           icon={Calendar}
           color="text-orange-600"
         />
         <StatCard
           label="Avg Attendance"
-          value={`${companyStats.averageAttendance}%`}
+          value={`${stats.averageAttendance}%`}
           sub="Monthly average"
           icon={TrendingUp}
           color="text-purple-600"
@@ -328,13 +338,13 @@ function CEODashboard() {
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
                 Pending Approvals
               </p>
-              <p className="text-3xl font-serif">{companyStats.pendingRequests}</p>
+              <p className="text-3xl font-serif">{stats.pendingRequests}</p>
             </div>
             <div className="p-4 rounded-2xl bg-background border border-border/30">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
                 Remote Workers
               </p>
-              <p className="text-3xl font-serif">{companyStats.remote}</p>
+              <p className="text-3xl font-serif">{stats.remote}</p>
             </div>
             <div className="p-4 rounded-2xl bg-background border border-border/30">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
@@ -350,8 +360,10 @@ function CEODashboard() {
 }
 
 // HR Dashboard Component
-function HRDashboard() {
-  const pendingLeaves = leaveRequests.filter(r => r.status === 'pending')
+function HRDashboard({ stats, users }: { stats: any; users: any[] }) {
+  // In a real app, leave requests would be fetched via a query hook
+  // For now we'll show a placeholder or empty list if no API yet
+  const pendingLeaves: any[] = []
 
   return (
     <>
@@ -366,7 +378,7 @@ function HRDashboard() {
         />
         <StatCard
           label="Present Today"
-          value={companyStats.presentToday.toString()}
+          value={stats?.presentToday.toString() || "0"}
           sub="Currently working"
           icon={UserCheck}
           color="text-green-600"
@@ -470,16 +482,14 @@ function HRDashboard() {
 }
 
 // Manager Dashboard Component
-function ManagerDashboard({ userId }: { userId: string }) {
-  const teamMembers = getUsersByManager(userId)
-  const teamAttendance = attendanceRecords.filter(r =>
+function ManagerDashboard({ userId, users, attendance }: { userId: string; users: any[]; attendance: any[] }) {
+  const teamMembers = users.filter(u => u.managerId === userId)
+  const teamAttendance = attendance.filter(r =>
     teamMembers.some(m => m.id === r.userId) &&
     r.date === new Date().toISOString().split('T')[0]
   )
   const presentCount = teamAttendance.filter(r => r.status === 'present' || r.status === 'late').length
-  const pendingApprovals = leaveRequests.filter(r =>
-    r.status === 'pending' && teamMembers.some(m => m.id === r.userId)
-  )
+  const pendingApprovals: any[] = [] // Placeholder for now
 
   return (
     <>

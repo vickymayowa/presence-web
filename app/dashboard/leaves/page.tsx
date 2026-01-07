@@ -34,7 +34,7 @@ import {
     Loader2
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { leaveRequests, getUserById, users } from "@/lib/mock-data"
+import { useLeavesQuery, useUsersQuery, useRequestLeaveMutation } from "@/lib/queries/presence-queries"
 import type { LeaveRequest } from "@/lib/types"
 
 const leaveTypes = [
@@ -50,7 +50,6 @@ export default function LeavesPage() {
     const { user } = useAuth()
     const [statusFilter, setStatusFilter] = React.useState("all")
     const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-    const [isSubmitting, setIsSubmitting] = React.useState(false)
     const [newRequest, setNewRequest] = React.useState({
         type: '',
         startDate: '',
@@ -58,7 +57,20 @@ export default function LeavesPage() {
         reason: ''
     })
 
+    const { data: leaveRequests = [], isLoading: isLeavesLoading } = useLeavesQuery()
+    const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
+    const requestLeave = useRequestLeaveMutation()
+
     if (!user) return null
+    if (isLeavesLoading || isUsersLoading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    const getUserById = (id: string) => allUsers.find(u => u.id === id)
 
     // Get relevant leave requests based on role
     const getRelevantRequests = (): LeaveRequest[] => {
@@ -66,13 +78,11 @@ export default function LeavesPage() {
             return leaveRequests.filter(r => r.userId === user.id)
         }
         if (user.role === 'manager') {
-            // Get requests from team members
-            const teamMembers = users.filter(u => u.managerId === user.id)
+            const teamMembers = allUsers.filter(u => u.managerId === user.id)
             return leaveRequests.filter(r =>
                 teamMembers.some(m => m.id === r.userId) || r.userId === user.id
             )
         }
-        // HR and CEO see all requests
         return leaveRequests
     }
 
@@ -87,14 +97,19 @@ export default function LeavesPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setIsSubmitting(true)
+        try {
+            await requestLeave.mutateAsync({
+                ...newRequest,
+                userId: user.id,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            } as Partial<LeaveRequest>)
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500))
-
-        setIsSubmitting(false)
-        setIsDialogOpen(false)
-        setNewRequest({ type: '', startDate: '', endDate: '', reason: '' })
+            setIsDialogOpen(false)
+            setNewRequest({ type: '', startDate: '', endDate: '', reason: '' })
+        } catch (error) {
+            console.error("Failed to submit leave request", error)
+        }
     }
 
     const getStatusBadge = (status: string) => {
@@ -219,8 +234,8 @@ export default function LeavesPage() {
                                 >
                                     Cancel
                                 </Button>
-                                <Button type="submit" className="rounded-xl" disabled={isSubmitting}>
-                                    {isSubmitting ? (
+                                <Button type="submit" className="rounded-xl" disabled={requestLeave.isPending}>
+                                    {requestLeave.isPending ? (
                                         <>
                                             <Loader2 className="size-4 mr-2 animate-spin" />
                                             Submitting...
