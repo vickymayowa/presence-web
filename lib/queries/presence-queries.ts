@@ -113,3 +113,17 @@ export function useRequestLeaveMutation() {
         },
     });
 }
+
+export function useInviteUserMutation() {
+    return useMutation({
+        mutationFn: async (invite: { email: string; role: string; companySlug: string }) => {
+            const res = await fetch(`${API_BASE}/auth/invite`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(invite),
+            });
+            if (!res.ok) throw new Error('Failed to send invitation');
+            return res.json();
+        },
+    });
+}

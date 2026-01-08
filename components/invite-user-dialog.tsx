@@ -23,6 +23,7 @@ import {
 import { UserPlus, Loader2, Copy, Check } from "lucide-react"
 import { toast } from "sonner"
 import type { UserRole } from "@/lib/types"
+import { useInviteUserMutation } from "@/lib/queries/presence-queries"
 
 export function InviteUserDialog({
     companySlug,
@@ -32,29 +33,36 @@ export function InviteUserDialog({
     onInvite?: () => void;
 }) {
     const [open, setOpen] = React.useState(false)
-    const [isLoading, setIsLoading] = React.useState(false)
     const [email, setEmail] = React.useState("")
     const [role, setRole] = React.useState<UserRole>("staff")
     const [inviteLink, setInviteLink] = React.useState("")
     const [copied, setCopied] = React.useState(false)
 
+    const inviteMutation = useInviteUserMutation()
+
     const handleInvite = async (e: React.FormEvent) => {
         e.preventDefault()
-        setIsLoading(true)
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        try {
+            const result = await inviteMutation.mutateAsync({
+                email,
+                role,
+                companySlug
+            })
 
-        // Generate mock invite link
-        const link = `https://presence.io/${companySlug}/join?token=${Math.random().toString(36).substring(7)}`
-        setInviteLink(link)
+            // Generate mock invite link from result if API returns one
+            // or just use a generic one if it doesn't
+            const link = result.inviteLink || `https://presence.io/${companySlug}/join?token=${Math.random().toString(36).substring(7)}`
+            setInviteLink(link)
 
-        toast.success("Invite Link Generated", {
-            description: email ? `Email sent to ${email}` : "Link ready to copy"
-        })
+            toast.success("Invite Link Generated", {
+                description: email ? `Email sent to ${email}` : "Link ready to copy"
+            })
 
-        setIsLoading(false)
-        if (onInvite) onInvite()
+            if (onInvite) onInvite()
+        } catch (error) {
+            toast.error("Failed to send invitation")
+        }
     }
 
     const copyToClipboard = () => {
@@ -68,6 +76,7 @@ export function InviteUserDialog({
         setInviteLink("")
         setEmail("")
         setRole("staff")
+        inviteMutation.reset()
     }
 
     return (
@@ -120,11 +129,11 @@ export function InviteUserDialog({
                             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-xl">
                                 Cancel
                             </Button>
-                            <Button type="button" variant="secondary" onClick={handleInvite} disabled={isLoading} className="rounded-xl">
+                            <Button type="button" variant="secondary" onClick={handleInvite} disabled={inviteMutation.isPending} className="rounded-xl">
                                 Generate Link
                             </Button>
-                            <Button type="submit" disabled={isLoading || !email} className="rounded-xl">
-                                {isLoading ? (
+                            <Button type="submit" disabled={inviteMutation.isPending || !email} className="rounded-xl">
+                                {inviteMutation.isPending ? (
                                     <>
                                         <Loader2 className="size-4 mr-2 animate-spin" />
                                         Sending...
