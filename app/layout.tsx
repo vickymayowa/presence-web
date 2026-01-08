@@ -11,12 +11,17 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 const _instrumentSerif = Instrument_Serif({ subsets: ["latin"], weight: ["400"] })
 
+export const viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+}
+
 export const metadata: Metadata = {
   title: "Presence | Modern Attendance System",
   description: "Experience the next generation of office attendance and team management.",
   manifest: "/manifest.json",
-  themeColor: "#000000",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   icons: {
     icon: [
       {
