@@ -160,7 +160,7 @@ export const users: User[] = [
 ];
 
 // Helper to get today's date
-const today = new Date().toISOString().split('T')[0];
+export const today = new Date().toISOString().split('T')[0];
 
 // Attendance Records
 export const attendanceRecords: AttendanceRecord[] = [
