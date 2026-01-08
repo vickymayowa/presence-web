@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowUpRight, Globe, Shield, Zap } from "lucide-react"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Modern Attendance for Modern Teams",
+  description: "Presence is the AI-native attendance system built for high-performance teams. Real-time tracking, global compliance, and effortless management.",
+}
 
 export default function Home() {
   return (

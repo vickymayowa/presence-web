@@ -1,8 +1,12 @@
-"use client"
-
-import * as React from "react"
+import type * as React from "react"
 import Link from "next/link"
-import { ShieldCheck, ChevronLeft } from "lucide-react"
+import { ShieldCheck } from "lucide-react"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "Authentication",
+    description: "Sign in or create an account to access the Presence platform.",
+}
 
 export default function AuthLayout({
     children,

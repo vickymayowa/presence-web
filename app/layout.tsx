@@ -19,8 +19,20 @@ export const viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Presence | Modern Attendance System",
-  description: "Experience the next generation of office attendance and team management.",
+  title: {
+    default: "Presence | Modern Attendance System",
+    template: "%s | Presence",
+  },
+  description: "Experience the next generation of office attendance and team management with real-time tracking, AI-powered insights, and seamless integration.",
+  keywords: ["attendance system", "HR management", "team tracking", "office management", "Presence app"],
+  authors: [{ name: "Presence Team" }],
+  creator: "Presence",
+  publisher: "Presence",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -38,6 +50,40 @@ export const metadata: Metadata = {
       },
     ],
     apple: "/apple-icon.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://presence-web.vercel.app",
+    siteName: "Presence",
+    title: "Presence | Modern Attendance System",
+    description: "Experience the next generation of office attendance and team management.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Presence - Modern Attendance System",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Presence | Modern Attendance System",
+    description: "Experience the next generation of office attendance and team management.",
+    images: ["/og-image.png"],
+    creator: "@presence",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 }
 

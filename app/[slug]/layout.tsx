@@ -1,8 +1,17 @@
-"use client"
-
-import * as React from "react"
+import type * as React from "react"
 import Link from "next/link"
 import { ShieldCheck } from "lucide-react"
+import type { Metadata } from "next"
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+    const slug = params.slug
+    const capitalizedSlug = slug.charAt(0).toUpperCase() + slug.slice(1)
+
+    return {
+        title: `${capitalizedSlug} Workspace`,
+        description: `Securely sign in to your ${capitalizedSlug} workspace on Presence.`,
+    }
+}
 
 export default function CompanyAuthLayout({
     children,

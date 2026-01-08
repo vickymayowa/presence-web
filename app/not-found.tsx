@@ -1,6 +1,12 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Home } from "lucide-react"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "404 - Page Not Found",
+  description: "The page you are looking for does not exist.",
+}
 
 export default function NotFound() {
   return (
@@ -36,7 +42,7 @@ export default function NotFound() {
             variant="outline"
             size="lg"
             className="border-border/40 hover:bg-secondary/50 px-8 py-6 rounded-full text-sm font-semibold bg-transparent"
-            // Use a simple history back as a fallback for the "Go Back" action
+          // Use a simple history back as a fallback for the "Go Back" action
           >
             <ArrowLeft className="mr-2 w-4 h-4" />
             Go Back
