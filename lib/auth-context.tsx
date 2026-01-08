@@ -50,15 +50,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            const data = await res.json();
+            const result = await res.json();
 
-            if (res.ok && data.user) {
-                setUser(data.user);
-                dispatch(setReduxUser(data.user));
-                localStorage.setItem(storageKey, JSON.stringify(data.user));
+            if (res.ok && result.data?.user) {
+                const { user, token } = result.data;
+
+                setUser(user);
+                dispatch(setReduxUser(user));
+
+                // Store both user and token
+                localStorage.setItem(storageKey, JSON.stringify(user));
+                localStorage.setItem('presence_auth_token', token);
+
                 return { success: true };
             } else {
-                return { success: false, error: data.error || 'Invalid credentials' };
+                return { success: false, error: result.message || 'Invalid credentials' };
             }
         } catch (error) {
             return { success: false, error: 'An unexpected error occurred during login' };

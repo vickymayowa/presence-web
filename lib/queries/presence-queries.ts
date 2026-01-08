@@ -17,13 +17,22 @@ export const queryKeys = {
 
 // --- QUERIES ---
 
+const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('presence_auth_token') : null;
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    };
+};
+
 export function useUsersQuery() {
     return useQuery({
         queryKey: queryKeys.users,
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/users`);
+            const res = await fetch(`${API_BASE}/users`, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed to fetch users');
-            return res.json() as Promise<User[]>;
+            const result = await res.json();
+            return result.data as User[];
         },
     });
 }
@@ -32,9 +41,10 @@ export function useCompanyStatsQuery() {
     return useQuery({
         queryKey: queryKeys.stats,
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/stats`);
+            const res = await fetch(`${API_BASE}/stats`, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed to fetch stats');
-            return res.json() as Promise<CompanyStats>;
+            const result = await res.json();
+            return result.data as CompanyStats;
         },
     });
 }
@@ -43,9 +53,10 @@ export function useAttendanceQuery() {
     return useQuery({
         queryKey: queryKeys.attendance,
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/attendance`);
+            const res = await fetch(`${API_BASE}/attendance`, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed to fetch attendance');
-            return res.json() as Promise<AttendanceRecord[]>;
+            const result = await res.json();
+            return result.data as AttendanceRecord[];
         },
     });
 }
@@ -54,9 +65,10 @@ export function useLeavesQuery() {
     return useQuery({
         queryKey: queryKeys.leaves,
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/leaves`);
+            const res = await fetch(`${API_BASE}/leaves`, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed to fetch leaves');
-            return res.json() as Promise<LeaveRequest[]>;
+            const result = await res.json();
+            return result.data as LeaveRequest[];
         },
     });
 }
@@ -82,7 +94,7 @@ export function useCheckInMutation() {
         mutationFn: async (record: Partial<AttendanceRecord>) => {
             const res = await fetch(`${API_BASE}/attendance/check-in`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(record),
             });
             if (!res.ok) throw new Error('Failed to check in');
@@ -102,7 +114,7 @@ export function useRequestLeaveMutation() {
         mutationFn: async (request: Partial<LeaveRequest>) => {
             const res = await fetch(`${API_BASE}/leaves/request`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(request),
             });
             if (!res.ok) throw new Error('Failed to request leave');

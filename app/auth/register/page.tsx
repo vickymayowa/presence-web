@@ -41,13 +41,35 @@ export default function RegisterPage() {
 
         setIsLoading(true)
 
-        // Simulate registration
-        await new Promise((resolve) => setTimeout(resolve, 3500))
+        try {
+            const response = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
 
-        setSuccess(true)
-        setTimeout(() => {
-            router.push("/auth/login")
-        }, 2000)
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Something went wrong");
+            }
+
+            // Save token if needed (though we might use cookies later)
+            if (result.data?.token) {
+                localStorage.setItem("token", result.data.token);
+            }
+
+            setSuccess(true)
+            setTimeout(() => {
+                router.push("/auth/login")
+            }, 2000)
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     const departments = [
