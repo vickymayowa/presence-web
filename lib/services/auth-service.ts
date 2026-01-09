@@ -70,6 +70,18 @@ export class AuthService {
                 const company = await prisma.company.findUnique({ where: { id: companyId } });
                 if (!company) throw new Error("Invalid organization ID provided");
                 targetCompanyId = company.id;
+            } else if (companyName) {
+                // Try to find company by name or slug
+                const company = await prisma.company.findFirst({
+                    where: {
+                        OR: [
+                            { name: companyName },
+                            { slug: companyName }
+                        ]
+                    }
+                });
+                if (!company) throw new Error(`Could not find organization: ${companyName}`);
+                targetCompanyId = company.id;
             } else {
                 // Production Readiness: In a real PRD, staff join via invite or specific slug.
                 // For agility, we'll assign to the first available company if none provided,

@@ -9,6 +9,7 @@ interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+    register: (data: any) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
 }
 
@@ -74,6 +75,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const register = async (data: any): Promise<{ success: boolean; error?: string }> => {
+        setIsLoading(true);
+        dispatch(setReduxLoading(true));
+
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const result = await res.json();
+
+            if (res.ok && result.data?.user) {
+                const { user, token } = result.data;
+
+                setUser(user);
+                dispatch(setReduxUser(user));
+
+                // Store both user and token
+                localStorage.setItem(storageKey, JSON.stringify(user));
+                localStorage.setItem('presence_auth_token', token);
+
+                return { success: true };
+            } else {
+                return { success: false, error: result.message || 'Registration failed' };
+            }
+        } catch (error) {
+            return { success: false, error: 'An unexpected error occurred during registration' };
+        } finally {
+            setIsLoading(false);
+            dispatch(setReduxLoading(false));
+        }
+    };
+
     const logout = () => {
         setUser(null);
         dispatch(setReduxUser(null));
@@ -83,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );
