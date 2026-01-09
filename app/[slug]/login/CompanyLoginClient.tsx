@@ -19,7 +19,7 @@ export default function CompanyLoginClient() {
     const [password, setPassword] = useState("")
 
     const slug = params.slug as string
-    const capitalizedSlug = slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : "Organization"
+    const capitalizedSlug = slug ? slug.toUpperCase() + slug.slice(1) : "Organization"
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
