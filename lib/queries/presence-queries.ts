@@ -139,3 +139,34 @@ export function useInviteUserMutation() {
         },
     });
 }
+
+export function useCreateEmployeeMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (employee: {
+            firstName: string;
+            lastName: string;
+            email: string;
+            password: string;
+            role: string;
+            department: string;
+            position?: string;
+        }) => {
+            const res = await fetch(`${API_BASE}/users/create`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(employee),
+            });
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || 'Failed to create employee');
+            }
+            return res.json();
+        },
+        onSuccess: () => {
+            // Invalidate and refetch users after creating a new employee
+            queryClient.invalidateQueries({ queryKey: queryKeys.users });
+        },
+    });
+}

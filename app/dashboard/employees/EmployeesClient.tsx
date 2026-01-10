@@ -13,11 +13,14 @@ import {
     Mail,
     Building2,
     Calendar,
-    ChevronDown
+    ChevronDown,
+    Plus,
+    X
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
-import { useUsersQuery } from "@/lib/queries/presence-queries"
+import { useUsersQuery, useCreateEmployeeMutation } from "@/lib/queries/presence-queries"
 import {
     Table,
     TableBody,
@@ -26,13 +29,75 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
+
+
 
 export default function EmployeesPage() {
     const { user: currentUser } = useAuth()
     const { data: allUsers = [], isLoading } = useUsersQuery()
+    const createEmployeeMutation = useCreateEmployeeMutation()
+    const { toast } = useToast()
+
     const [searchQuery, setSearchQuery] = React.useState("")
+    const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
+    const [formData, setFormData] = React.useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        role: "staff",
+        department: "",
+        position: ""
+    })
 
     if (!currentUser) return null
+
+    const handleAddEmployee = async () => {
+        try {
+            await createEmployeeMutation.mutateAsync(formData)
+            toast({
+                title: "Success",
+                description: "Employee added successfully",
+            })
+            setIsAddDialogOpen(false)
+            // Reset form
+            setFormData({
+                firstName: "",
+                lastName: "",
+                email: "",
+                password: "",
+                role: "staff",
+                department: "",
+                position: ""
+            })
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "Failed to add employee",
+                variant: "destructive"
+            })
+        }
+    }
+
+    const handleInputChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }))
+    }
 
     const filteredEmployees = allUsers.filter(u =>
         `${u.firstName} ${u.lastName} ${u.email} ${u.department}`.toLowerCase().includes(searchQuery.toLowerCase())
@@ -52,7 +117,11 @@ export default function EmployeesPage() {
                         Bulk Actions <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                     {(currentUser.role === 'ceo' || currentUser.role === 'hr') && (
-                        <Button className="rounded-2xl h-12 px-6 bg-primary text-primary-foreground">
+                        <Button
+                            className="rounded-2xl h-12 px-6 bg-primary text-primary-foreground"
+                            onClick={() => setIsAddDialogOpen(true)}
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
                             Add Employee
                         </Button>
                     )}
@@ -156,6 +225,135 @@ export default function EmployeesPage() {
                     </Table>
                 </CardContent>
             </Card>
+
+            {/* Add Employee Dialog */}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-serif">Add New Employee</DialogTitle>
+                        <DialogDescription>
+                            Create a new employee account. They will be added to your company.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-6 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="firstName">First Name *</Label>
+                                <Input
+                                    id="firstName"
+                                    value={formData.firstName}
+                                    onChange={(e) => handleInputChange("firstName", e.target.value)}
+                                    placeholder="John"
+                                    className="rounded-xl"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="lastName">Last Name *</Label>
+                                <Input
+                                    id="lastName"
+                                    value={formData.lastName}
+                                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                                    placeholder="Doe"
+                                    className="rounded-xl"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email *</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => handleInputChange("email", e.target.value)}
+                                placeholder="john.doe@company.com"
+                                className="rounded-xl"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password *</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                value={formData.password}
+                                onChange={(e) => handleInputChange("password", e.target.value)}
+                                placeholder="••••••••"
+                                className="rounded-xl"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="role">Role *</Label>
+                                <Select
+                                    value={formData.role}
+                                    onValueChange={(value) => handleInputChange("role", value)}
+                                >
+                                    <SelectTrigger className="rounded-xl">
+                                        <SelectValue placeholder="Select role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="staff">Staff</SelectItem>
+                                        <SelectItem value="manager" disabled>Manager</SelectItem>
+                                        <SelectItem value="hr" disabled>HR</SelectItem>
+                                        {currentUser.role === 'ceo' && (
+                                            <SelectItem value="ceo">CEO</SelectItem>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="department">Department *</Label>
+                                <Input
+                                    id="department"
+                                    value={formData.department}
+                                    onChange={(e) => handleInputChange("department", e.target.value)}
+                                    placeholder="Engineering"
+                                    className="rounded-xl"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="position">Position (Optional)</Label>
+                            <Input
+                                id="position"
+                                value={formData.position}
+                                onChange={(e) => handleInputChange("position", e.target.value)}
+                                placeholder="Software Engineer"
+                                className="rounded-xl"
+                            />
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsAddDialogOpen(false)}
+                            className="rounded-xl"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleAddEmployee}
+                            disabled={
+                                !formData.firstName ||
+                                !formData.lastName ||
+                                !formData.email ||
+                                !formData.password ||
+                                !formData.role ||
+                                !formData.department ||
+                                createEmployeeMutation.isPending
+                            }
+                            className="rounded-xl"
+                        >
+                            {createEmployeeMutation.isPending ? "Adding..." : "Add Employee"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
