@@ -3,15 +3,30 @@ import Link from "next/link"
 import { ShieldCheck } from "lucide-react"
 import type { Metadata } from "next"
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-    const slug = params.slug
-    const capitalizedSlug = slug.charAt(0).toUpperCase() + slug.slice(1)
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug?: string };
+}): Promise<Metadata> {
+  const slug = params?.slug;
 
+  if (!slug || typeof slug !== "string") {
     return {
-        title: `${capitalizedSlug} Workspace`,
-        description: `Securely sign in to your ${capitalizedSlug} workspace on Presence.`,
-    }
+      title: "Workspace — Presence",
+      description: "Securely sign in to your workspace on Presence.",
+    };
+  }
+
+  const capitalizedSlug = slug
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  return {
+    title: `${capitalizedSlug} Workspace`,
+    description: `Securely sign in to your ${capitalizedSlug} workspace on Presence.`,
+  };
 }
+
 
 export default function CompanyAuthLayout({
     children,
