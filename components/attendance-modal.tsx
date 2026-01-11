@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, Clock, Fingerprint, MapPin, Scan, ShieldCheck } from "lucide-react"
+import { Check, Clock, MapPin, Scan, ShieldCheck, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-// import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 interface AttendanceModalProps {
@@ -24,7 +24,7 @@ interface AttendanceModalProps {
 }
 
 export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps) {
-  // const { toast } = useToast()
+  const { toast } = useToast()
   const [step, setStep] = React.useState<"details" | "verifying" | "success">("details")
   const [workMode, setWorkMode] = React.useState("on-site")
   const [location, setLocation] = React.useState("Headquarters - Main Office")
@@ -34,7 +34,7 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } }
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } },
       })
       setStream(mediaStream)
       if (videoRef.current) {
@@ -47,7 +47,7 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
 
   const stopCamera = () => {
     if (stream) {
-      stream.getTracks().forEach(track => track.stop())
+      stream.getTracks().forEach((track) => track.stop())
       setStream(null)
     }
   }
@@ -60,7 +60,7 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
     setTimeout(() => {
       setStep("success")
       stopCamera()
-    }, 4000)
+    }, 7000)
   }
 
   const resetAndClose = () => {
@@ -82,14 +82,16 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
             <div
               className={cn(
                 "size-16 rounded-3xl flex items-center justify-center transition-all duration-500",
-                step === "verifying"
-                  ? "bg-primary/10 scale-110"
-                  : "bg-background shadow-sm border border-border/30",
+                step === "verifying" ? "bg-primary/10 scale-110" : "bg-background shadow-sm border border-border/30",
               )}
             >
               {step === "details" && <ShieldCheck className="size-8 text-muted-foreground" />}
               {step === "verifying" && <Scan className="size-8 text-primary animate-pulse" />}
-              {step === "success" && <div className="size-16 rounded-3xl bg-green-500 flex items-center justify-center animate-in zoom-in duration-500"><Check className="size-8 text-white" /></div>}
+              {step === "success" && (
+                <div className="size-16 rounded-3xl bg-green-500 flex items-center justify-center animate-in zoom-in duration-500">
+                  <Check className="size-8 text-white" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -161,36 +163,43 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
 
             {step === "verifying" && (
               <div className="py-2 flex flex-col items-center justify-center space-y-6 animate-in fade-in duration-700">
-                <div className="relative size-64 overflow-hidden rounded-[3rem] border-2 border-primary/20 bg-black group">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover scale-x-[-1]"
-                  />
+                <div className="relative">
+                  {/* Background blur effect for depth */}
+                  <div className="absolute -inset-8 bg-black/5 backdrop-blur-sm rounded-[3.5rem] -z-10" />
 
-                  {/* Face ID Overlay */}
-                  <div className="absolute inset-0 pointer-events-none">
-                    {/* Corner Borders */}
-                    <div className="absolute top-8 left-8 size-12 border-t-2 border-l-2 border-primary/60 rounded-tl-2xl" />
-                    <div className="absolute top-8 right-8 size-12 border-t-2 border-r-2 border-primary/60 rounded-tr-2xl" />
-                    <div className="absolute bottom-8 left-8 size-12 border-b-2 border-l-2 border-primary/60 rounded-bl-2xl" />
-                    <div className="absolute bottom-8 right-8 size-12 border-b-2 border-r-2 border-primary/60 rounded-br-2xl" />
+                  {/* Camera frame with pop animation */}
+                  <div className="relative size-64 overflow-hidden rounded-[3rem] border-2 border-primary/20 bg-black group animate-in zoom-in-50 duration-500 shadow-2xl shadow-primary/30">
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover scale-x-[-1]"
+                    />
 
-                    {/* Scanning Line */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-scan shadow-[0_0_15px_rgba(var(--primary),0.8)]" />
+                    {/* Face ID Overlay */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      {/* Corner Borders */}
+                      <div className="absolute top-8 left-8 size-12 border-t-2 border-l-2 border-primary/60 rounded-tl-2xl" />
+                      <div className="absolute top-8 right-8 size-12 border-t-2 border-r-2 border-primary/60 rounded-tr-2xl" />
+                      <div className="absolute bottom-8 left-8 size-12 border-b-2 border-l-2 border-primary/60 rounded-bl-2xl" />
+                      <div className="absolute bottom-8 right-8 size-12 border-b-2 border-r-2 border-primary/60 rounded-br-2xl" />
 
-                    {/* Detection Points */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-48 border border-white/10 rounded-full animate-ping" />
-                  </div>
+                      {/* Scanning Line */}
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-scan shadow-[0_0_15px_rgba(var(--primary),0.8)]" />
 
-                  {!stream && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-secondary/80 backdrop-blur-sm">
-                      <Loader2 className="size-8 text-primary animate-spin" />
+                      {/* Detection Points */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-48 border border-white/10 rounded-full animate-ping" />
                     </div>
-                  )}
+
+                    {!stream && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-secondary/80 backdrop-blur-sm">
+                        <Loader2 className="size-8 text-primary animate-spin" />
+                      </div>
+                    )}
+                  </div>
                 </div>
+
                 <div className="flex flex-col items-center gap-2">
                   <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary animate-pulse">
                     Analyzing Facial Biometrics
@@ -209,26 +218,33 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
                 <div className="p-6 rounded-3xl bg-secondary/10 border border-border/20 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Verified Identity</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        Verified Identity
+                      </p>
                       <p className="text-lg font-medium">Lukas Mitchell</p>
                     </div>
-                    <Badge className="bg-green-500/10 text-green-600 border-green-500/20 rounded-lg">High Confidence</Badge>
+                    <Badge className="bg-green-500/10 text-green-600 border-green-500/20 rounded-lg">
+                      High Confidence
+                    </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/10">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Check-in Time</p>
-                      <p className="text-sm font-medium">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        Check-in Time
+                      </p>
+                      <p className="text-sm font-medium">
+                        {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Location</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        Location
+                      </p>
                       <p className="text-sm font-medium truncate">{location}</p>
                     </div>
                   </div>
                 </div>
-                <Button
-                  className="w-full h-14 rounded-2xl text-lg font-serif"
-                  onClick={resetAndClose}
-                >
+                <Button className="w-full h-14 rounded-2xl text-lg font-serif" onClick={resetAndClose}>
                   Continue to Feed
                 </Button>
               </div>
@@ -236,7 +252,11 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
 
             {step === "details" && (
               <DialogFooter className="flex-col sm:flex-col gap-3">
-                <Button size="lg" className="w-full h-14 rounded-2xl text-lg font-serif group shadow-xl shadow-primary/20" onClick={handleVerify}>
+                <Button
+                  size="lg"
+                  className="w-full h-14 rounded-2xl text-lg font-serif group shadow-xl shadow-primary/20"
+                  onClick={handleVerify}
+                >
                   Face ID Check-in
                   <Scan className="ml-2 size-5 group-hover:scale-110 transition-transform" />
                 </Button>
@@ -249,7 +269,6 @@ export function AttendanceModal({ isOpen, onClose, type }: AttendanceModalProps)
                 </Button>
               </DialogFooter>
             )}
-
           </div>
         </div>
       </DialogContent>
