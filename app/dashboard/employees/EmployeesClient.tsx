@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     Users,
     Search,
@@ -15,7 +16,12 @@ import {
     Calendar,
     ChevronDown,
     Plus,
-    X
+    X,
+    ChevronLeft,
+    ChevronRight,
+    Trash2,
+    UserX,
+    Download
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -44,6 +50,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 
 
@@ -65,6 +78,18 @@ export default function EmployeesPage() {
         department: "",
         position: ""
     })
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = React.useState(1)
+    const [itemsPerPage, setItemsPerPage] = React.useState(10)
+
+    // Filter state
+    const [roleFilter, setRoleFilter] = React.useState<string>("all")
+    const [departmentFilter, setDepartmentFilter] = React.useState<string>("all")
+    const [statusFilter, setStatusFilter] = React.useState<string>("all")
+
+    // Bulk selection state
+    const [selectedEmployees, setSelectedEmployees] = React.useState<Set<string>>(new Set())
 
     if (!currentUser) return null
 
@@ -99,9 +124,83 @@ export default function EmployeesPage() {
         setFormData(prev => ({ ...prev, [field]: value }))
     }
 
-    const filteredEmployees = allUsers.filter(u =>
-        `${u.firstName} ${u.lastName} ${u.email} ${u.department}`.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    // Bulk selection handlers
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            const allIds = new Set(paginatedEmployees.map(emp => emp.id))
+            setSelectedEmployees(allIds)
+        } else {
+            setSelectedEmployees(new Set())
+        }
+    }
+
+    const handleSelectEmployee = (employeeId: string, checked: boolean) => {
+        const newSelected = new Set(selectedEmployees)
+        if (checked) {
+            newSelected.add(employeeId)
+        } else {
+            newSelected.delete(employeeId)
+        }
+        setSelectedEmployees(newSelected)
+    }
+
+    const handleBulkDelete = () => {
+        toast({
+            title: "Bulk Delete",
+            description: `${selectedEmployees.size} employee(s) will be deleted`,
+        })
+        // TODO: Implement bulk delete mutation
+        setSelectedEmployees(new Set())
+    }
+
+    const handleBulkExport = () => {
+        toast({
+            title: "Export",
+            description: `Exporting ${selectedEmployees.size} employee(s)`,
+        })
+        // TODO: Implement export functionality
+    }
+
+    // Get unique departments and roles for filters
+    const departments = React.useMemo(() => {
+        const depts = new Set(allUsers.map(u => u.department))
+        return Array.from(depts).filter(Boolean)
+    }, [allUsers])
+
+    const roles = React.useMemo(() => {
+        const roleSet = new Set(allUsers.map(u => u.role))
+        return Array.from(roleSet).filter(Boolean)
+    }, [allUsers])
+
+    // Apply filters
+    const filteredEmployees = React.useMemo(() => {
+        return allUsers.filter(u => {
+            // Search filter
+            const searchMatch = `${u.firstName} ${u.lastName} ${u.email} ${u.department}`.toLowerCase().includes(searchQuery.toLowerCase())
+
+            // Role filter
+            const roleMatch = roleFilter === "all" || u.role === roleFilter
+
+            // Department filter
+            const departmentMatch = departmentFilter === "all" || u.department === departmentFilter
+
+            // Status filter (assuming all active for now)
+            const statusMatch = statusFilter === "all" || statusFilter === "active"
+
+            return searchMatch && roleMatch && departmentMatch && statusMatch
+        })
+    }, [allUsers, searchQuery, roleFilter, departmentFilter, statusFilter])
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex)
+
+    // Reset to page 1 when filters change
+    React.useEffect(() => {
+        setCurrentPage(1)
+    }, [searchQuery, roleFilter, departmentFilter, statusFilter])
 
     return (
         <div className="space-y-8">
@@ -113,9 +212,31 @@ export default function EmployeesPage() {
                     </p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="rounded-2xl h-12 px-6 border-border/40">
-                        Bulk Actions <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="rounded-2xl h-12 px-6 border-border/40"
+                                disabled={selectedEmployees.size === 0}
+                            >
+                                Bulk Actions ({selectedEmployees.size}) <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={handleBulkExport}>
+                                <Download className="mr-2 h-4 w-4" />
+                                Export Selected
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={handleBulkDelete}
+                                className="text-destructive focus:text-destructive"
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Selected
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     {(currentUser.role === 'ceo' || currentUser.role === 'hr') && (
                         <Button
                             className="rounded-2xl h-12 px-6 bg-primary text-primary-foreground"
@@ -140,10 +261,66 @@ export default function EmployeesPage() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" className="rounded-xl h-10 gap-2">
-                                <Filter className="h-4 w-4" /> Filter
-                            </Button>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {/* Role Filter */}
+                            <Select value={roleFilter} onValueChange={setRoleFilter}>
+                                <SelectTrigger className="rounded-xl h-10 w-[140px]">
+                                    <SelectValue placeholder="Role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Roles</SelectItem>
+                                    {roles.map(role => (
+                                        <SelectItem key={role} value={role} className="capitalize">
+                                            {role}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Department Filter */}
+                            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                                <SelectTrigger className="rounded-xl h-10 w-[160px]">
+                                    <SelectValue placeholder="Department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Departments</SelectItem>
+                                    {departments.map(dept => (
+                                        <SelectItem key={dept} value={dept}>
+                                            {dept}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Status Filter */}
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="rounded-xl h-10 w-[130px]">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* Clear Filters */}
+                            {(roleFilter !== "all" || departmentFilter !== "all" || statusFilter !== "all") && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="rounded-xl h-10"
+                                    onClick={() => {
+                                        setRoleFilter("all")
+                                        setDepartmentFilter("all")
+                                        setStatusFilter("all")
+                                    }}
+                                >
+                                    <X className="h-4 w-4 mr-1" />
+                                    Clear
+                                </Button>
+                            )}
+
                             <div className="h-6 w-px bg-border/40 mx-2" />
                             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">
                                 {filteredEmployees.length} Results
@@ -155,6 +332,12 @@ export default function EmployeesPage() {
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent border-border/10">
+                                <TableHead className="w-[50px]">
+                                    <Checkbox
+                                        checked={selectedEmployees.size === paginatedEmployees.length && paginatedEmployees.length > 0}
+                                        onCheckedChange={handleSelectAll}
+                                    />
+                                </TableHead>
                                 <TableHead className="w-[300px] text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Employee</TableHead>
                                 <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Department</TableHead>
                                 <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Role</TableHead>
@@ -294,12 +477,12 @@ export default function EmployeesPage() {
                                     <SelectTrigger className="rounded-xl">
                                         <SelectValue placeholder="Select role" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="rounded-xl">
                                         <SelectItem value="staff">Staff</SelectItem>
                                         <SelectItem value="manager" disabled>Manager</SelectItem>
                                         <SelectItem value="hr" disabled>HR</SelectItem>
                                         {currentUser.role === 'ceo' && (
-                                            <SelectItem value="ceo">CEO</SelectItem>
+                                            <SelectItem value="ceo" disabled>CEO</SelectItem>
                                         )}
                                     </SelectContent>
                                 </Select>
