@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storageKey = 'presence_user_session';
 
     useEffect(() => {
-        // Check for saved session
+        // Check for saved session (user profile only, token is in HttpOnly cookie)
         const savedUser = localStorage.getItem(storageKey);
         if (savedUser) {
             try {
@@ -38,7 +38,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setIsLoading(false);
         dispatch(setReduxLoading(false));
-    }, [dispatch]);
+
+        // Periodic session check to enforce single session
+        const interval = setInterval(() => {
+            if (user) {
+                checkSession();
+            }
+        }, 30000); // Check every 30 seconds
+
+        return () => clearInterval(interval);
+    }, [dispatch, user]);
+
+    const checkSession = async () => {
+        try {
+            const res = await fetch('/api/auth/session-check');
+            const result = await res.json();
+            if (!result.success) {
+                // Session invalid (logged in elsewhere)
+                logout();
+                alert("You have been logged out because a new login was detected on another device.");
+                window.location.href = "/auth/login";
+            }
+        } catch (error) {
+            console.error("Session check failed", error);
+        }
+    };
 
     const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
         setIsLoading(true);
@@ -54,14 +78,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const result = await res.json();
 
             if (res.ok && result.data?.user) {
-                const { user, token } = result.data;
+                const { user } = result.data;
 
                 setUser(user);
                 dispatch(setReduxUser(user));
 
-                // Store both user and token
+                // Store only user object, token is handled by cookie
                 localStorage.setItem(storageKey, JSON.stringify(user));
-                localStorage.setItem('presence_auth_token', token);
 
                 return { success: true };
             } else {
@@ -89,14 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const result = await res.json();
 
             if (res.ok && result.data?.user) {
-                const { user, token } = result.data;
+                const { user } = result.data;
 
                 setUser(user);
                 dispatch(setReduxUser(user));
 
-                // Store both user and token
                 localStorage.setItem(storageKey, JSON.stringify(user));
-                localStorage.setItem('presence_auth_token', token);
 
                 return { success: true };
             } else {
@@ -114,8 +135,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         dispatch(setReduxUser(null));
         localStorage.removeItem(storageKey);
-        // Call API to invalidate session
-        fetch('/api/auth/logout', { method: 'POST' }).catch(console.error);
+        // Call API to invalidate session and clear cookie
+        fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+            window.location.href = "/auth/login";
+        });
     };
 
     return (

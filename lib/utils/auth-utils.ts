@@ -8,18 +8,33 @@ export interface AuthSession {
     email: string;
     role: string;
     companyId: string;
+    sessionId: string;
 }
 
 /**
- * Extracts and verifies the JWT token from the Authorization header.
+ * Extracts and verifies the JWT token from the Authorization header or Cookies.
  */
 export function getSession(req: NextRequest): AuthSession | null {
+    // 1. Try to get token from Authorization header
     const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return null;
+    let token = "";
+    
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
     }
 
-    const token = authHeader.split(" ")[1];
+    // 2. If no header, try to get from cookies
+    if (!token) {
+        const cookieToken = req.cookies.get("presence_auth_token");
+        if (cookieToken) {
+            token = cookieToken.value;
+        }
+    }
+
+    if (!token) {
+        return null;
+    }
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as AuthSession;

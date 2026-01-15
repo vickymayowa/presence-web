@@ -1,6 +1,7 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/lib/services/auth-service";
 import { ApiResponse } from "@/lib/utils/api-response";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
     try {
@@ -13,15 +14,26 @@ export async function POST(req: NextRequest) {
 
         const result = await authService.login(email, password);
 
-        // Standardized success response
-        return ApiResponse.success(
-            {
-                user: result.user,
-                token: result.token
-            },
-            result.message,
-            200
-        );
+        // Create response
+        const response = NextResponse.json({
+            success: true,
+            message: result.message,
+            data: {
+                user: result.user
+            }
+        });
+
+        // Set auth cookie
+        const cookieStore = await cookies();
+        cookieStore.set("presence_auth_token", result.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7 // 7 days
+        });
+
+        return response;
 
     } catch (error: any) {
         if (process.env.NODE_ENV === 'development') {
@@ -30,11 +42,10 @@ export async function POST(req: NextRequest) {
 
         const message = error.message || "Failed to sign in";
 
-        // Return 401 for authentication failures
         if (message.includes("Invalid email or password") || message.includes("credentials")) {
             return ApiResponse.error(message, 401);
         }
 
-        return ApiResponse.internalError("Authentication failed", error);
+        return ApiResponse.error(message, 500);
     }
 }

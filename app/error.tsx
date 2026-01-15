@@ -10,6 +10,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  console.log(error)
   return (
     <main className="min-h-screen bg-background flex items-center justify-center selection:bg-primary selection:text-primary-foreground">
       {/* Navigation */}

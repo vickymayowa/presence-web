@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserRole } from "@/lib/types";
+import { v4 as uuidv4 } from "uuid";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-me";
 
@@ -100,7 +101,8 @@ export class AuthService {
         // 4. Secure Password Hashing
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        // 5. User Creation
+        // 5. User Creation with New Session ID
+        const newSessionId = uuidv4();
         const user = await prisma.user.create({
             data: {
                 firstName: firstName.trim(),
@@ -111,11 +113,12 @@ export class AuthService {
                 department,
                 position: this.getDefaultPosition(role),
                 companyId: targetCompanyId,
+                sessionId: newSessionId,
             },
         });
 
         // 6. Session Token Generation
-        const token = this.generateToken(user);
+        const token = this.generateToken(user, newSessionId);
 
         return {
             user: this.sanitizeUser(user),
@@ -148,7 +151,14 @@ export class AuthService {
             throw new Error("Invalid credentials");
         }
 
-        const token = this.generateToken(user);
+        // Generate and persist new session ID (invalidates previous sessions)
+        const newSessionId = uuidv4();
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { sessionId: newSessionId }
+        });
+
+        const token = this.generateToken(user, newSessionId);
 
         return {
             user: this.sanitizeUser(user),
@@ -158,19 +168,32 @@ export class AuthService {
     }
 
     /**
-     * Helper to generate a standardized JWT token.
+     * Helper to generate a standardized JWT token and unique session ID.
      */
-    private generateToken(user: any) {
+    private generateToken(user: any, sessionId: string) {
         return jwt.sign(
             {
                 id: user.id,
                 email: user.email,
                 role: user.role,
-                companyId: user.companyId
+                companyId: user.companyId,
+                sessionId: sessionId
             },
             JWT_SECRET,
             { expiresIn: "7d" }
         );
+    }
+
+    /**
+     * Verify if the current session is still valid (not replaced by a newer login).
+     */
+    async verifySession(userId: string, sessionId: string) {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { sessionId: true }
+        });
+
+        return user?.sessionId === sessionId;
     }
 
     /**
