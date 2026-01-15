@@ -4,7 +4,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { PWARegistration } from "@/components/pwa-registration"
 import { ProgressBar } from "@/components/progress-bar"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "sonner"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 
@@ -101,7 +101,7 @@ export default function RootLayout({
           {children}
           <Analytics />
           <PWARegistration />
-          <Toaster />
+          <Toaster position="top-center" richColors />
         </Providers>
       </body>
     </html>

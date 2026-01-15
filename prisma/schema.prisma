@@ -116,6 +116,8 @@ model User {
   approvedLeaves   LeaveRequest[]    @relation("LeaveApprover")
   approvedOvertime OvertimeRequest[] @relation("OvertimeApprover")
 
+  sessionId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

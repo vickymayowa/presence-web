@@ -3,6 +3,8 @@ import Link from "next/link"
 import { ArrowUpRight, Globe, Shield, Zap } from "lucide-react"
 import type { Metadata } from "next"
 
+import { ThemeToggle } from "@/components/theme-toggle"
+
 export const metadata: Metadata = {
   title: "Modern Attendance for Modern Teams",
   description: "Presence is the AI-native attendance system built for high-performance teams. Real-time tracking, global compliance, and effortless management.",
@@ -29,6 +31,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Link href="/auth/login">
               <Button variant="ghost" className="text-sm font-semibold hover:bg-transparent">
                 Login

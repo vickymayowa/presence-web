@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { AuthProvider } from "@/lib/auth-context"
 import { Bell } from "lucide-react"
 import { GlobalSearch } from "@/components/global-search"
-import { BuiltWithPresence } from "@/components/built-with-presence"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function DashboardLayoutClient({ children }: { children: React.ReactNode }) {
   const now = new Date()
@@ -37,6 +37,7 @@ export function DashboardLayoutClient({ children }: { children: React.ReactNode 
 
             <div className="flex items-center gap-4">
               <GlobalSearch />
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="icon"

@@ -46,6 +46,7 @@ export function useCompanyStatsQuery() {
             const result = await res.json();
             return result.data as CompanyStats;
         },
+        refetchInterval: 10000, // Real-time updates every 10 seconds
     });
 }
 

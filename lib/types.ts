@@ -98,10 +98,12 @@ export interface OvertimeRequest {
 
 export interface CompanyStats {
   totalEmployees: number;
-  presentToday: number;
+  activeEmployees: number;
   onLeave: number;
   remote: number;
-  averageAttendance: number;
+  attendanceRate: number;
+  departments: number;
+  performanceIndex: number;
   pendingRequests: number;
 }
 

@@ -9,7 +9,7 @@ export class CompanyService {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const [totalEmployees, presentToday, onLeave, pendingRequests] = await Promise.all([
+        const [totalEmployees, presentToday, onLeave, pendingRequests, departments] = await Promise.all([
             // Total employees in the company
             prisma.user.count({ where: { companyId } }),
 
@@ -37,6 +37,11 @@ export class CompanyService {
                     user: { companyId },
                     status: 'pending'
                 }
+            }),
+
+            // Total departments
+            prisma.department.count({
+                where: { companyId }
             })
         ]);
 
@@ -49,13 +54,20 @@ export class CompanyService {
             }
         });
 
+        // Calculate attendance rate
+        const attendanceRate = totalEmployees > 0
+            ? Math.round((presentToday / totalEmployees) * 100)
+            : 0;
+
         return {
             totalEmployees,
-            presentToday,
+            activeEmployees: presentToday,
             onLeave,
             remote,
             pendingRequests,
-            averageAttendance: 94.5, // Placeholder for trend logic
+            departments,
+            attendanceRate,
+            performanceIndex: 94.2, // Placeholder for trend logic
         };
     }
 }
