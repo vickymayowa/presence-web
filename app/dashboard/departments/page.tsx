@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { Building2, Users, TrendingUp, MapPin, Filter, Plus } from "lucide-react"
+import { DepartmentModal } from "@/components/department-modal"
+import type { DepartmentFormData } from "@/components/department-modal"
 
 const departmentData = [
     { id: 1, name: "Engineering", head: "Sarah Mitchell", employees: 24, onsite: 18, hybrid: 4, remote: 2, rate: "94%" },
@@ -44,8 +46,63 @@ const chartConfig = {
 
 export default function DepartmentsPage() {
     const [selectedDept, setSelectedDept] = useState<number | null>(1)
+    const [departments, setDepartments] = useState(departmentData)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [modalMode, setModalMode] = useState<"create" | "edit">("create")
+    const [editingDept, setEditingDept] = useState<DepartmentFormData | undefined>()
 
-    const selectedDeptData = departmentData.find((d) => d.id === selectedDept)
+    const handleNewDepartment = () => {
+        setModalMode("create")
+        setEditingDept(undefined)
+        setIsModalOpen(true)
+    }
+
+    const handleEditDepartment = (dept: (typeof departmentData)[0]) => {
+        setModalMode("edit")
+        setEditingDept({
+            name: dept.name,
+            head: dept.head,
+            employees: dept.employees.toString(),
+            onsite: dept.onsite.toString(),
+            hybrid: dept.hybrid.toString(),
+            remote: dept.remote.toString(),
+        })
+        setIsModalOpen(true)
+    }
+
+    const handleSubmitDepartment = (data: DepartmentFormData) => {
+        if (modalMode === "create") {
+            const newDept = {
+                id: Math.max(...departments.map((d) => d.id)) + 1,
+                name: data.name,
+                head: data.head,
+                employees: Number.parseInt(data.employees) || 0,
+                onsite: Number.parseInt(data.onsite) || 0,
+                hybrid: Number.parseInt(data.hybrid) || 0,
+                remote: Number.parseInt(data.remote) || 0,
+                rate: "0%",
+            }
+            setDepartments([...departments, newDept])
+        } else {
+            setDepartments(
+                departments.map((dept) =>
+                    dept.id === selectedDept
+                        ? {
+                            ...dept,
+                            name: data.name,
+                            head: data.head,
+                            employees: Number.parseInt(data.employees) || 0,
+                            onsite: Number.parseInt(data.onsite) || 0,
+                            hybrid: Number.parseInt(data.hybrid) || 0,
+                            remote: Number.parseInt(data.remote) || 0,
+                        }
+                        : dept,
+                ),
+            )
+        }
+    }
+
+    const selectedDeptData = departments.find((d) => d.id === selectedDept)
 
     const stats = [
         { label: "Total Departments", value: "6", icon: Building2, color: "text-blue-600" },
@@ -148,7 +205,7 @@ export default function DepartmentsPage() {
                                 <Filter className="w-4 h-4" />
                                 Filter
                             </Button>
-                            <Button size="sm" className="gap-2">
+                            <Button size="sm" className="gap-2" onClick={handleNewDepartment}>
                                 <Plus className="w-4 h-4" />
                                 New Department
                             </Button>
@@ -156,7 +213,7 @@ export default function DepartmentsPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {departmentData.map((dept) => (
+                        {departments.map((dept) => (
                             <Card
                                 key={dept.id}
                                 className={`p-6 border cursor-pointer transition-all ${selectedDept === dept.id ? "border-primary bg-primary/5" : "border-border/40 hover:border-border/60"
@@ -164,7 +221,7 @@ export default function DepartmentsPage() {
                                 onClick={() => setSelectedDept(dept.id)}
                             >
                                 <div className="flex items-start justify-between mb-4">
-                                    <div>
+                                    <div className="flex-1">
                                         <h4 className="font-serif text-lg mb-1">{dept.name}</h4>
                                         <p className="text-sm text-muted-foreground">Head: {dept.head}</p>
                                     </div>
@@ -187,6 +244,20 @@ export default function DepartmentsPage() {
                                             Remote: {dept.remote}
                                         </Badge>
                                     </div>
+
+                                    {selectedDept === dept.id && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="w-full mt-4 rounded-lg bg-transparent"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleEditDepartment(dept)
+                                            }}
+                                        >
+                                            Edit Department
+                                        </Button>
+                                    )}
                                 </div>
                             </Card>
                         ))}
@@ -261,7 +332,7 @@ export default function DepartmentsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {departmentData.map((dept) => (
+                                    {departments.map((dept) => (
                                         <tr key={dept.id} className="border-b border-border/10 hover:bg-secondary/20 transition-colors">
                                             <td className="py-4 text-sm font-medium">{dept.name}</td>
                                             <td className="py-4 text-sm text-muted-foreground">{dept.head}</td>
@@ -280,6 +351,15 @@ export default function DepartmentsPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {/* Department Modal Component */}
+            <DepartmentModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmit={handleSubmitDepartment}
+                initialData={editingDept}
+                mode={modalMode}
+            />
         </div>
     )
 }
