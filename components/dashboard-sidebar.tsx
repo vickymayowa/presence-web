@@ -121,18 +121,24 @@ const roleColors: Record<UserRole, string> = {
 
 export function DashboardSidebar() {
     const pathname = usePathname()
-    const router = useRouter()
     const { user, logout } = useAuth()
 
-    const handleLogout = () => {
+    const handleLogout = React.useCallback(() => {
         logout()
-        router.push("/auth/login")
-    }
+    }, [logout])
 
+    // ✅ Hook ALWAYS runs
+    const initials = React.useMemo(() => {
+        if (!user) return ""
+        const first = user.firstName?.[0] ?? ""
+        const last = user.lastName?.[0] ?? ""
+        return (first + last).toUpperCase()
+    }, [user])
+
+    // ✅ Guard AFTER all hooks
     if (!user) return null
 
     const navConfig = navigationConfig[user.role]
-    const initials = `${user.firstName[0]}${user.lastName[0]}`
 
     return (
         <Sidebar variant="inset" collapsible="icon">
