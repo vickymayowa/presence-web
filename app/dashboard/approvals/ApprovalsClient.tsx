@@ -94,11 +94,12 @@ export default function ApprovalsPage() {
 
         setIsProcessing(true)
         try {
+            const status = actionType === 'approve' ? 'approved' : 'rejected'
             await updateLeave.mutateAsync({
                 id: selectedRequest.id,
-                status: actionType
+                status
             })
-            toast.success(`Leave request ${actionType}ed successfully`)
+            toast.success(`Leave request ${status} successfully`)
             setSelectedRequest(null)
             setActionType(null)
             setRejectionReason("")
