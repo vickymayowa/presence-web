@@ -55,7 +55,7 @@ export default function DashboardPage() {
     // Get today's attendance for current user
     const today = new Date().toISOString().split('T')[0]
     const todayAttendance = attendanceRecords.find(r => r.userId === user.id && r.date === today)
-    const isCheckedIn = todayAttendance?.checkIn && !todayAttendance?.checkOut
+    const isCheckedIn = !!(todayAttendance?.checkIn && !todayAttendance?.checkOut)
 
     // Render different dashboards based on role
     const renderDashboard = () => {
@@ -169,14 +169,9 @@ function CEODashboard({ stats, onBroadcast }: { stats: any; onBroadcast: () => v
                             <CardTitle className="font-serif text-2xl">Company Performance</CardTitle>
                             <CardDescription>Attendance trends over the last 7 days</CardDescription>
                         </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" className="rounded-xl border-primary color-primary" onClick={onBroadcast}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Broadcast
-                            </Button>
-                            <Button variant="ghost" size="sm" className="rounded-xl">
-                                Details <ArrowUpRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        </div>
+                        <Button variant="ghost" size="sm" className="rounded-xl">
+                            Details <ArrowUpRight className="ml-2 h-4 w-4" />
+                        </Button>
                     </CardHeader>
                     <CardContent className="h-[300px] w-full pt-4">
                         <ResponsiveContainer width="100%" height="100%">
@@ -209,7 +204,7 @@ function CEODashboard({ stats, onBroadcast }: { stats: any; onBroadcast: () => v
                                     fill="hsl(var(--primary))"
                                     barSize={40}
                                 >
-                                    {data.map((entry, index) => (
+                                    {data.map((entry: any, index: number) => (
                                         <Cell
                                             key={`cell-${index}`}
                                             fill={index === data.length - 1 ? 'hsl(var(--primary))' : 'hsl(var(--primary) / 0.6)'}
@@ -221,35 +216,54 @@ function CEODashboard({ stats, onBroadcast }: { stats: any; onBroadcast: () => v
                     </CardContent>
                 </Card>
 
-                <Card className="border-border/40">
-                    <CardHeader>
-                        <CardTitle className="font-serif text-xl">Top Departments</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        {(stats?.departmentStats || []).length > 0 ? (
-                            stats.departmentStats.map((dept: any) => (
-                                <div key={dept.name} className="flex items-center justify-between">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium leading-none">{dept.name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {dept.attendanceRate}% attendance rate
-                                        </p>
+                <div className="space-y-6">
+                    <Card className="border-border/40 bg-primary/5 shadow-lg shadow-primary/5">
+                        <CardHeader>
+                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-primary/70">Management Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-3">
+                            <Button
+                                className="w-full justify-start rounded-xl h-12 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                                onClick={onBroadcast}
+                            >
+                                <Megaphone className="mr-3 h-5 w-5" /> Broadcast Announcement
+                            </Button>
+                            <Button className="w-full justify-start rounded-xl h-12 border-border/40" variant="outline">
+                                <FileText className="mr-3 h-5 w-5" /> Export Company Report
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border/40">
+                        <CardHeader>
+                            <CardTitle className="font-serif text-xl">Top Departments</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {(stats?.departmentStats || []).length > 0 ? (
+                                stats.departmentStats.map((dept: any) => (
+                                    <div key={dept.name} className="flex items-center justify-between">
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium leading-none">{dept.name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {dept.attendanceRate}% attendance rate
+                                            </p>
+                                        </div>
+                                        <Badge
+                                            variant="secondary"
+                                            className={`rounded-lg ${dept.attendanceRate >= 90 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}
+                                        >
+                                            {dept.attendanceRate >= 90 ? 'Optimal' : 'Needs Review'}
+                                        </Badge>
                                     </div>
-                                    <Badge
-                                        variant="secondary"
-                                        className={`rounded-lg ${dept.attendanceRate >= 90 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}
-                                    >
-                                        {dept.attendanceRate >= 90 ? 'Optimal' : 'Needs Review'}
-                                    </Badge>
+                                ))
+                            ) : (
+                                <div className="text-center py-10 text-muted-foreground italic text-sm">
+                                    No department data available
                                 </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-10 text-muted-foreground italic text-sm">
-                                No department data available
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     )
