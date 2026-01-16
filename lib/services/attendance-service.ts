@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { notificationService } from "./notification-service";
 
 export class AttendanceService {
     /**
@@ -33,7 +34,7 @@ export class AttendanceService {
         const { type, workMode, verificationMethod, notes, location } = data;
 
         if (type === 'in') {
-            return prisma.attendanceRecord.upsert({
+            const record = await prisma.attendanceRecord.upsert({
                 where: {
                     userId_date: { userId, date: today }
                 },
@@ -54,8 +55,19 @@ export class AttendanceService {
                     location
                 }
             });
+
+            // Trigger notification
+            await notificationService.createNotification({
+                userId,
+                title: "Check-in Confirmed",
+                message: `You successfully checked in at ${new Date().toLocaleTimeString()} (${workMode})`,
+                type: 'attendance',
+                actionUrl: '/dashboard/attendance'
+            }).catch(e => console.error("Notification failed", e));
+
+            return record;
         } else {
-            return prisma.attendanceRecord.update({
+            const record = await prisma.attendanceRecord.update({
                 where: {
                     userId_date: { userId, date: today }
                 },
@@ -64,6 +76,17 @@ export class AttendanceService {
                     notes
                 }
             });
+
+            // Trigger notification
+            await notificationService.createNotification({
+                userId,
+                title: "Check-out Logged",
+                message: `You checked out at ${new Date().toLocaleTimeString()}`,
+                type: 'attendance',
+                actionUrl: '/dashboard/attendance'
+            }).catch(e => console.error("Notification failed", e));
+
+            return record;
         }
     }
 }

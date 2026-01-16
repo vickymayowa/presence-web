@@ -132,7 +132,7 @@ export function DepartmentModal({ isOpen, onClose, onSubmit, initialData, mode =
                             </SelectTrigger>
                             <SelectContent className="rounded-xl">
 
-                                <SelectValue placeholder="Select a Department Head" />
+                                {/* <SelectValue placeholder="Select a Department Head" /> */}
                                 {users.map((user) => (
                                     <SelectItem key={user.id} value={user.id}>
                                         {user.firstName} ({user.role})

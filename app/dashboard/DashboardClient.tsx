@@ -19,9 +19,11 @@ import {
     ChevronRight,
     CheckCircle2,
     XCircle,
-    AlertCircle
+    AlertCircle,
+    Megaphone
 } from "lucide-react"
 import { AttendanceModal } from "@/components/attendance-modal"
+import { BroadcastModal } from "@/components/broadcast-modal"
 import { useAuth } from "@/lib/auth-context"
 import {
     useAttendanceQuery,
@@ -35,6 +37,7 @@ export default function DashboardPage() {
         isOpen: false,
         type: "in",
     })
+    const [broadcastModalOpen, setBroadcastModalOpen] = React.useState(false)
 
     const { data: attendanceRecords = [], isLoading: isAttendanceLoading } = useAttendanceQuery()
     const { data: stats, isLoading: isStatsLoading } = useCompanyStatsQuery()
@@ -58,9 +61,9 @@ export default function DashboardPage() {
     const renderDashboard = () => {
         switch (user.role) {
             case 'ceo':
-                return <CEODashboard stats={stats} />
+                return <CEODashboard stats={stats} onBroadcast={() => setBroadcastModalOpen(true)} />
             case 'hr':
-                return <HRDashboard stats={stats} users={allUsers} />
+                return <HRDashboard stats={stats} users={allUsers} onBroadcast={() => setBroadcastModalOpen(true)} />
             case 'manager':
                 return <ManagerDashboard userId={user.id} users={allUsers} attendance={attendanceRecords} />
             default:
@@ -98,6 +101,10 @@ export default function DashboardPage() {
                 onClose={() => setAttendanceModal({ ...attendanceModal, isOpen: false })}
                 type={attendanceModal.type}
             />
+            <BroadcastModal
+                isOpen={broadcastModalOpen}
+                onClose={() => setBroadcastModalOpen(false)}
+            />
         </div>
     )
 }
@@ -113,7 +120,7 @@ import {
     Cell
 } from 'recharts'
 
-function CEODashboard({ stats }: { stats: any }) {
+function CEODashboard({ stats, onBroadcast }: { stats: any; onBroadcast: () => void }) {
     const data = stats?.trendData || [
         { name: 'Mon', attendance: 0 },
         { name: 'Tue', attendance: 0 },
@@ -162,9 +169,14 @@ function CEODashboard({ stats }: { stats: any }) {
                             <CardTitle className="font-serif text-2xl">Company Performance</CardTitle>
                             <CardDescription>Attendance trends over the last 7 days</CardDescription>
                         </div>
-                        <Button variant="ghost" size="sm" className="rounded-xl">
-                            Details <ArrowUpRight className="ml-2 h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" className="rounded-xl border-primary color-primary" onClick={onBroadcast}>
+                                <Megaphone className="mr-2 h-4 w-4" /> Broadcast
+                            </Button>
+                            <Button variant="ghost" size="sm" className="rounded-xl">
+                                Details <ArrowUpRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="h-[300px] w-full pt-4">
                         <ResponsiveContainer width="100%" height="100%">
@@ -243,7 +255,7 @@ function CEODashboard({ stats }: { stats: any }) {
     )
 }
 
-function HRDashboard({ stats, users }: { stats: any; users: any[] }) {
+function HRDashboard({ stats, users, onBroadcast }: { stats: any; users: any[]; onBroadcast: () => void }) {
     return (
         <div className="grid gap-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -306,6 +318,9 @@ function HRDashboard({ stats, users }: { stats: any; users: any[] }) {
                             <CardTitle className="text-sm font-bold uppercase tracking-widest text-primary/70">Quick Actions</CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-2">
+                            <Button className="w-full justify-start rounded-xl h-11" variant="ghost" onClick={onBroadcast}>
+                                <Megaphone className="mr-2 h-4 w-4" /> Broadcast Standup
+                            </Button>
                             <Button className="w-full justify-start rounded-xl h-11" variant="ghost">
                                 <Users className="mr-2 h-4 w-4" /> Add New Employee
                             </Button>

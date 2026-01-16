@@ -11,6 +11,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import { Bell } from "lucide-react"
 import { GlobalSearch } from "@/components/global-search"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { NotificationCenter } from "@/components/notification-center"
 
 export function DashboardLayoutClient({ children }: { children: React.ReactNode }) {
   const now = new Date()
@@ -39,14 +40,7 @@ export function DashboardLayoutClient({ children }: { children: React.ReactNode 
             <div className="flex items-center gap-4">
               <GlobalSearch />
               <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-xl text-muted-foreground hover:text-foreground relative"
-              >
-                <Bell className="size-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />
-              </Button>
+              <NotificationCenter />
 
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/50 text-xs font-medium text-muted-foreground">
                 <span>

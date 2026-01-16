@@ -63,10 +63,11 @@ enum RequestStatus {
 }
 
 enum NotificationType {
+  attendance
+  announcement
+  reminder
+  leave
   info
-  warning
-  success
-  error
 }
 
 // =========================
