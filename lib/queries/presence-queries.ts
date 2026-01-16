@@ -221,3 +221,21 @@ export function useUpdateDepartmentMutation() {
         },
     });
 }
+export function useUpdateLeaveMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
+            const res = await fetch(`${API_BASE}/leaves/${id}`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ status }),
+            });
+            if (!res.ok) throw new Error('Failed to update leave');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.leaves });
+        },
+    });
+}

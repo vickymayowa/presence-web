@@ -18,13 +18,16 @@ import {
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth-context"
-import { useLeavesQuery, useRequestLeaveMutation } from "@/lib/queries/presence-queries"
+import { useLeavesQuery, useRequestLeaveMutation, useUpdateLeaveMutation } from "@/lib/queries/presence-queries"
 import { toast } from "sonner"
+import { RequestLeaveModal } from "@/components/request-leave-modal"
 
 export default function LeavesPage() {
     const { user } = useAuth()
     const { data: leaves = [], isLoading } = useLeavesQuery()
     const requestLeave = useRequestLeaveMutation()
+    const updateLeave = useUpdateLeaveMutation()
+    const [isRequestModalOpen, setIsRequestModalOpen] = React.useState(false)
 
     if (!user) return null
 
@@ -40,6 +43,25 @@ export default function LeavesPage() {
         }
     }
 
+    const handleUpdateStatus = async (id: string, status: 'approved' | 'rejected') => {
+        try {
+            await updateLeave.mutateAsync({ id, status })
+            toast.success(`Leave request ${status} successfully`)
+        } catch (error) {
+            toast.error(`Failed to ${status} leave request`)
+        }
+    }
+
+    const handleRequestLeave = async (data: any) => {
+        try {
+            await requestLeave.mutateAsync(data)
+            toast.success("Leave request submitted successfully")
+            setIsRequestModalOpen(false)
+        } catch (error) {
+            toast.error("Failed to submit leave request")
+        }
+    }
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -49,7 +71,10 @@ export default function LeavesPage() {
                         Plan your time off and track your leave requests.
                     </p>
                 </div>
-                <Button className="rounded-2xl h-12 px-6 bg-primary text-primary-foreground transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <Button
+                    onClick={() => setIsRequestModalOpen(true)}
+                    className="rounded-2xl h-12 px-6 bg-primary text-primary-foreground transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
                     <Plus className="mr-2 h-4 w-4" /> Request Leave
                 </Button>
             </div>
@@ -98,16 +123,32 @@ export default function LeavesPage() {
                                         <CardContent className="p-4 flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-3">
                                                 <Avatar>
-                                                    <AvatarFallback>E</AvatarFallback>
+                                                    <AvatarImage src={leave.user?.avatar || undefined} />
+                                                    <AvatarFallback>{leave.user?.firstName?.[0]}{leave.user?.lastName?.[0]}</AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <p className="text-sm font-medium">Employee Name</p>
-                                                    <p className="text-xs text-muted-foreground">{leave.type} • {leave.startDate} to {leave.endDate}</p>
+                                                    <p className="text-sm font-medium">{leave.user?.firstName} {leave.user?.lastName}</p>
+                                                    <p className="text-xs text-muted-foreground">{leave.type} • {new Date(leave.startDate).toLocaleDateString()} to {new Date(leave.endDate).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
-                                                <Button size="sm" variant="outline" className="rounded-lg h-8 border-red-200 text-red-600 hover:bg-red-50">Reject</Button>
-                                                <Button size="sm" className="rounded-lg h-8 bg-green-600 hover:bg-green-700 text-white border-0">Approve</Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="rounded-lg h-8 border-red-200 text-red-600 hover:bg-red-50"
+                                                    disabled={updateLeave.isPending}
+                                                    onClick={() => handleUpdateStatus(leave.id, 'rejected')}
+                                                >
+                                                    Reject
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    className="rounded-lg h-8 bg-green-600 hover:bg-green-700 text-white border-0"
+                                                    disabled={updateLeave.isPending}
+                                                    onClick={() => handleUpdateStatus(leave.id, 'approved')}
+                                                >
+                                                    Approve
+                                                </Button>
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -151,7 +192,7 @@ export default function LeavesPage() {
                                                         </Badge>
                                                     </div>
                                                     <p className="text-xs text-muted-foreground font-light">
-                                                        {leave.startDate} — {leave.endDate} • {calculateDays(leave.startDate, leave.endDate)} days
+                                                        {new Date(leave.startDate).toLocaleDateString()} — {new Date(leave.endDate).toLocaleDateString()} • {calculateDays(leave.startDate, leave.endDate)} days
                                                     </p>
                                                 </div>
                                                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -166,6 +207,12 @@ export default function LeavesPage() {
                     </div>
                 </div>
             </div>
+            <RequestLeaveModal
+                isOpen={isRequestModalOpen}
+                onClose={() => setIsRequestModalOpen(false)}
+                onSubmit={handleRequestLeave}
+                loading={requestLeave.isPending}
+            />
         </div>
     )
 }

@@ -29,8 +29,9 @@ import {
     MessageSquare
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { useLeavesQuery, useUsersQuery } from "@/lib/queries/presence-queries"
+import { useLeavesQuery, useUsersQuery, useUpdateLeaveMutation } from "@/lib/queries/presence-queries"
 import type { LeaveRequest } from "@/lib/types"
+import { toast } from "sonner"
 
 const leaveTypeConfig: Record<string, { icon: any; color: string; label: string }> = {
     annual: { icon: Briefcase, color: 'text-blue-600 bg-blue-100', label: 'Annual Leave' },
@@ -51,6 +52,7 @@ export default function ApprovalsPage() {
 
     const { data: leaveRequests = [], isLoading: isLeavesLoading } = useLeavesQuery()
     const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
+    const updateLeave = useUpdateLeaveMutation()
 
     if (!user) return null
     if (isLeavesLoading || isUsersLoading) {
@@ -88,14 +90,23 @@ export default function ApprovalsPage() {
             : allRelevantRequests
 
     const handleAction = async () => {
-        if (!selectedRequest) return
+        if (!selectedRequest || !actionType) return
 
         setIsProcessing(true)
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        setIsProcessing(false)
-        setSelectedRequest(null)
-        setActionType(null)
-        setRejectionReason("")
+        try {
+            await updateLeave.mutateAsync({
+                id: selectedRequest.id,
+                status: actionType
+            })
+            toast.success(`Leave request ${actionType}ed successfully`)
+            setSelectedRequest(null)
+            setActionType(null)
+            setRejectionReason("")
+        } catch (error) {
+            toast.error(`Failed to ${actionType} leave request`)
+        } finally {
+            setIsProcessing(false)
+        }
     }
 
     return (
