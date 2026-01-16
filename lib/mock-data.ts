@@ -399,10 +399,12 @@ export const notifications: Notification[] = [
 // Company Stats
 export const companyStats: CompanyStats = {
     totalEmployees: users.length,
-    presentToday: attendanceRecords.filter(r => r.date === today && r.status === 'present').length,
+    activeEmployees: attendanceRecords.filter(r => r.date === today && r.status === 'present').length,
     onLeave: attendanceRecords.filter(r => r.date === today && r.status === 'leave').length,
     remote: attendanceRecords.filter(r => r.date === today && r.workMode === 'remote').length,
-    averageAttendance: 94.5,
+    attendanceRate: 94.5,
+    departments: 5,
+    performanceIndex: 88.2,
     pendingRequests: leaveRequests.filter(r => r.status === 'pending').length,
 };
 

@@ -109,7 +109,6 @@ export default function ApprovalsPage() {
             setIsProcessing(false)
         }
     }
-
     return (
         <div className="space-y-8">
             {/* Page Header */}

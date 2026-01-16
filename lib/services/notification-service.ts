@@ -18,7 +18,7 @@ export class NotificationService {
         userId: string;
         title: string;
         message: string;
-        type: 'attendance' | 'announcement' | 'reminder' | 'leave';
+        type: 'attendance' | 'announcement' | 'reminder' | 'leave' | 'info';
         actionUrl?: string;
     }) {
         // 1. Save to database
@@ -84,9 +84,9 @@ export class NotificationService {
         companyId: string;
         title: string;
         message: string;
-        type: 'announcement' | 'reminder';
+        type: 'announcement' | 'reminder' | 'leave' | 'attendance' | 'info';
         actionUrl?: string;
-        role?: string; // Optional: Send to specific role
+        role?: string;
     }) {
         const users = await prisma.user.findMany({
             where: {
