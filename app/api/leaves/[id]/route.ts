@@ -5,8 +5,9 @@ import { getSession } from "@/lib/utils/auth-utils";
 
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     const session = getSession(req);
     if (!session) return ApiResponse.unauthorized();
 
@@ -21,7 +22,7 @@ export async function PATCH(
             return ApiResponse.error("Invalid status", 400);
         }
 
-        const leave = await leaveService.updateLeaveStatus(params.id, status, session.id);
+        const leave = await leaveService.updateLeaveStatus(id, status, session.id);
         return ApiResponse.success(leave, `Leave request ${status}`);
     } catch (error: any) {
         return ApiResponse.internalError("Failed to update leave status", error);

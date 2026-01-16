@@ -3,7 +3,8 @@ import { departmentService } from "@/lib/services/department-service";
 import { ApiResponse } from "@/lib/utils/api-response";
 import { getSession } from "@/lib/utils/auth-utils";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = getSession(req);
     if (!session) return ApiResponse.unauthorized();
 
@@ -13,14 +14,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     try {
         const body = await req.json();
-        const department = await departmentService.updateDepartment(params.id, body);
+        const department = await departmentService.updateDepartment(id, body);
         return ApiResponse.success(department);
     } catch (error: any) {
         return ApiResponse.internalError("Failed to update department", error);
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = getSession(req);
     if (!session) return ApiResponse.unauthorized();
 
@@ -29,7 +31,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
-        await departmentService.deleteDepartment(params.id);
+        await departmentService.deleteDepartment(id);
         return ApiResponse.success({ message: "Department deleted successfully" });
     } catch (error: any) {
         return ApiResponse.internalError("Failed to delete department", error);

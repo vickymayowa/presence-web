@@ -18,11 +18,12 @@ export default function CompanyLoginClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const slug = params?.slug;
+  const rawSlug = params?.slug;
+  const slug = Array.isArray(rawSlug) ? rawSlug[0] : (rawSlug as string) || "";
 
-const capitalizedSlug =
-  params?.slug?.replace(/-/g, " ")?.replace(/\b\w/g, (c) => c.toUpperCase()) ??
-  "Organization";
+  const capitalizedSlug = slug
+    ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Organization";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -4,27 +4,27 @@ import { ShieldCheck } from "lucide-react"
 import type { Metadata } from "next"
 
 export async function generateMetadata({
-  params,
+    params,
 }: {
-  params: { slug?: string };
+    params: Promise<{ slug?: string }>;
 }): Promise<Metadata> {
-  const slug = params?.slug;
+    const { slug } = await params;
 
-  if (!slug || typeof slug !== "string") {
+    if (!slug || typeof slug !== "string") {
+        return {
+            title: "Workspace — Presence",
+            description: "Securely sign in to your workspace on Presence.",
+        };
+    }
+
+    const capitalizedSlug = slug
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
     return {
-      title: "Workspace — Presence",
-      description: "Securely sign in to your workspace on Presence.",
+        title: `${capitalizedSlug} Workspace`,
+        description: `Securely sign in to your ${capitalizedSlug} workspace on Presence.`,
     };
-  }
-
-  const capitalizedSlug = slug
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-
-  return {
-    title: `${capitalizedSlug} Workspace`,
-    description: `Securely sign in to your ${capitalizedSlug} workspace on Presence.`,
-  };
 }
 
 
