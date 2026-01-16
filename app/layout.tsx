@@ -88,6 +88,8 @@ export const metadata: Metadata = {
   },
 }
 
+import { GlobalSessionCheck } from "@/components/global-session-check"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -98,6 +100,7 @@ export default function RootLayout({
       <body className="font-sans antialiased text-foreground bg-background">
         <Providers>
           <ProgressBar />
+          <GlobalSessionCheck />
           {children}
           <Analytics />
           <PWARegistration />

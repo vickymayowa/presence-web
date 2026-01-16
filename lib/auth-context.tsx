@@ -5,15 +5,26 @@ import { usePathname, useRouter } from "next/navigation"
 import { useAppDispatch } from "./store/hooks"
 import { setUser as setReduxUser, setLoading as setReduxLoading } from "./store/slices/authSlice"
 
-const AuthContext = createContext(null)
+import { User } from "./types"
+
+interface AuthContextType {
+    user: User | null
+    isLoading: boolean
+    login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+    register: (data: any) => Promise<{ success: boolean; error?: string }>
+    logout: () => void
+    internalLogout: () => void
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const storageKey = "presence_user_session"
 
-export function AuthProvider({ children }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter()
     const pathname = usePathname()
     const dispatch = useAppDispatch()
 
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
     // Load user once
@@ -48,26 +59,7 @@ export function AuthProvider({ children }) {
         }
     }, [user, pathname, isLoading])
 
-    // 🔄 Single-session enforcement (safe)
-    useEffect(() => {
-        if (!user) return
-
-        const interval = setInterval(async () => {
-            try {
-                const res = await fetch("/api/auth/session-check")
-                const result = await res.json()
-
-                if (!result.success) {
-                    internalLogout()
-                    alert("You were logged out because another device signed in.")
-                }
-            } catch { }
-        }, 30000)
-
-        return () => clearInterval(interval)
-    }, [user])
-
-    const login = async (email, password) => {
+    const login = async (email: string, password: string) => {
         setIsLoading(true)
         dispatch(setReduxLoading(true))
 
@@ -94,10 +86,40 @@ export function AuthProvider({ children }) {
         }
     }
 
+    const register = async (data: any) => {
+        setIsLoading(true)
+        dispatch(setReduxLoading(true))
+
+        try {
+            const res = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+
+            const result = await res.json()
+
+            if (res.ok && result.data?.user) {
+                setUser(result.data.user)
+                dispatch(setReduxUser(result.data.user))
+                localStorage.setItem(storageKey, JSON.stringify(result.data.user))
+                return { success: true }
+            }
+
+            return { success: false, error: result.message || "Registration failed" }
+        } catch (error) {
+            return { success: false, error: "An unexpected error occurred" }
+        } finally {
+            setIsLoading(false)
+            dispatch(setReduxLoading(false))
+        }
+    }
+
     const internalLogout = () => {
         setUser(null)
         dispatch(setReduxUser(null))
         localStorage.removeItem(storageKey)
+        localStorage.removeItem("presence_auth_token") // Legacy key cleanup
         fetch("/api/auth/logout", { method: "POST" })
     }
 
@@ -107,10 +129,16 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, login, register, logout, internalLogout }}>
             {children}
         </AuthContext.Provider>
     )
 }
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => {
+    const context = useContext(AuthContext)
+    if (context === undefined) {
+        throw new Error("useAuth must be used within an AuthProvider")
+    }
+    return context
+}

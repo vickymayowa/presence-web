@@ -10,6 +10,11 @@ export async function GET(req: NextRequest) {
         return ApiResponse.unauthorized();
     }
 
+    // Direct check for CEO or HR access
+    if (session.role !== 'ceo' && session.role !== 'hr') {
+        return ApiResponse.error("Forbidden: Authorized management access only", 403);
+    }
+
     try {
         const stats = await companyService.getCompanyStats(session.companyId);
         return ApiResponse.success(stats);

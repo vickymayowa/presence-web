@@ -102,7 +102,28 @@ export default function DashboardPage() {
     )
 }
 
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    CartesianGrid,
+    Cell
+} from 'recharts'
+
 function CEODashboard({ stats }: { stats: any }) {
+    const data = stats?.trendData || [
+        { name: 'Mon', attendance: 0 },
+        { name: 'Tue', attendance: 0 },
+        { name: 'Wed', attendance: 0 },
+        { name: 'Thu', attendance: 0 },
+        { name: 'Fri', attendance: 0 },
+        { name: 'Sat', attendance: 0 },
+        { name: 'Sun', attendance: 0 },
+    ]
+
     return (
         <div className="grid gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -127,7 +148,7 @@ function CEODashboard({ stats }: { stats: any }) {
                 />
                 <StatsCard
                     title="Performance Index"
-                    value="94.2"
+                    value={stats?.performanceIndex || "0.0"}
                     description="Organization health score"
                     icon={TrendingUp}
                     trend={+1.2}
@@ -139,14 +160,52 @@ function CEODashboard({ stats }: { stats: any }) {
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <div>
                             <CardTitle className="font-serif text-2xl">Company Performance</CardTitle>
-                            <CardDescription>Attendance trends over the last 30 days</CardDescription>
+                            <CardDescription>Attendance trends over the last 7 days</CardDescription>
                         </div>
                         <Button variant="ghost" size="sm" className="rounded-xl">
                             Details <ArrowUpRight className="ml-2 h-4 w-4" />
                         </Button>
                     </CardHeader>
-                    <CardContent className="h-[300px] flex items-center justify-center text-muted-foreground font-light italic">
-                        Visual analytics coming soon...
+                    <CardContent className="h-[300px] w-full pt-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={data}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                                />
+                                <Tooltip
+                                    cursor={{ fill: 'hsl(var(--secondary))', opacity: 0.4 }}
+                                    contentStyle={{
+                                        backgroundColor: 'hsl(var(--background))',
+                                        borderColor: 'hsl(var(--border))',
+                                        borderRadius: '12px',
+                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                                    }}
+                                />
+                                <Bar
+                                    dataKey="attendance"
+                                    radius={[6, 6, 0, 0]}
+                                    fill="hsl(var(--primary))"
+                                    barSize={40}
+                                >
+                                    {data.map((entry, index) => (
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={index === data.length - 1 ? 'hsl(var(--primary))' : 'hsl(var(--primary) / 0.6)'}
+                                        />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
 

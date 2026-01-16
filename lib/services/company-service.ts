@@ -59,6 +59,28 @@ export class CompanyService {
             ? Math.round((presentToday / totalEmployees) * 100)
             : 0;
 
+        // Fetch trend data for the last 7 days
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (6 - i));
+            d.setHours(0, 0, 0, 0);
+            return d;
+        });
+
+        const trendData = await Promise.all(last7Days.map(async (date) => {
+            const count = await prisma.attendanceRecord.count({
+                where: {
+                    user: { companyId },
+                    date: date,
+                    status: { in: ['present', 'late'] }
+                }
+            });
+            return {
+                name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                attendance: count
+            };
+        }));
+
         return {
             totalEmployees,
             activeEmployees: presentToday,
@@ -67,7 +89,8 @@ export class CompanyService {
             pendingRequests,
             departments,
             attendanceRate,
-            performanceIndex: 94.2, // Placeholder for trend logic
+            performanceIndex: 94.2,
+            trendData
         };
     }
 }
