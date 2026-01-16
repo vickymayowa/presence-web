@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Card } from "@/components/ui/card"
@@ -9,31 +9,13 @@ import { Button } from "@/components/ui/button"
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { Building2, Users, TrendingUp, MapPin, Filter, Plus } from "lucide-react"
 import { DepartmentModal } from "@/components/department-modal"
-import type { DepartmentFormData } from "@/components/department-modal"
-
-const departmentData = [
-    { id: 1, name: "Engineering", head: "Sarah Mitchell", employees: 24, onsite: 18, hybrid: 4, remote: 2, rate: "94%" },
-    { id: 2, name: "Design", head: "Emma Wilson", employees: 8, onsite: 6, hybrid: 2, remote: 0, rate: "100%" },
-    { id: 3, name: "Marketing", head: "James Rodriguez", employees: 6, onsite: 3, hybrid: 2, remote: 1, rate: "83%" },
-    { id: 4, name: "Sales", head: "Michael Chen", employees: 12, onsite: 10, hybrid: 2, remote: 0, rate: "85%" },
-    { id: 5, name: "HR", head: "Lisa Anderson", employees: 5, onsite: 3, hybrid: 2, remote: 0, rate: "100%" },
-    { id: 6, name: "Finance", head: "David Kumar", employees: 7, onsite: 5, hybrid: 2, remote: 0, rate: "96%" },
-]
-
-const departmentAttendance = [
-    { dept: "Engineering", present: 22, absent: 2, late: 0 },
-    { dept: "Design", present: 8, absent: 0, late: 0 },
-    { dept: "Marketing", present: 5, absent: 1, late: 0 },
-    { dept: "Sales", present: 10, absent: 1, late: 1 },
-    { dept: "HR", present: 5, absent: 0, late: 0 },
-    { dept: "Finance", present: 7, absent: 0, late: 0 },
-]
-
-const workModeDistribution = [
-    { name: "On-site", value: 45, fill: "var(--color-chart-1)" },
-    { name: "Hybrid", value: 14, fill: "var(--color-chart-2)" },
-    { name: "Remote", value: 3, fill: "var(--color-chart-3)" },
-]
+import { useAuth } from "@/lib/auth-context"
+import {
+    useDepartmentsQuery,
+    useCreateDepartmentMutation,
+    useUpdateDepartmentMutation
+} from "@/lib/queries/presence-queries"
+import { toast } from "sonner"
 
 const chartConfig = {
     present: { label: "Present", color: "hsl(var(--color-chart-1))" },
@@ -45,70 +27,86 @@ const chartConfig = {
 }
 
 export default function DepartmentsPage() {
-    const [selectedDept, setSelectedDept] = useState<number | null>(1)
-    const [departments, setDepartments] = useState(departmentData)
+    const { user } = useAuth()
+    const { data: departments = [], isLoading } = useDepartmentsQuery()
+    const createMutation = useCreateDepartmentMutation()
+    const updateMutation = useUpdateDepartmentMutation()
+
+    const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [modalMode, setModalMode] = useState<"create" | "edit">("create")
-    const [editingDept, setEditingDept] = useState<DepartmentFormData | undefined>()
+    const [editingDept, setEditingDept] = useState<any | undefined>()
+
+    const isAuthorized = user?.role === 'ceo' || user?.role === 'hr'
 
     const handleNewDepartment = () => {
+        if (!isAuthorized) return
         setModalMode("create")
         setEditingDept(undefined)
         setIsModalOpen(true)
     }
 
-    const handleEditDepartment = (dept: (typeof departmentData)[0]) => {
+    const handleEditDepartment = (dept: any) => {
+        if (!isAuthorized) return
         setModalMode("edit")
         setEditingDept({
+            id: dept.id,
             name: dept.name,
-            head: dept.head,
-            employees: dept.employees.toString(),
-            onsite: dept.onsite.toString(),
-            hybrid: dept.hybrid.toString(),
-            remote: dept.remote.toString(),
+            managerId: dept.managerId,
+            description: dept.description,
         })
         setIsModalOpen(true)
     }
 
-    const handleSubmitDepartment = (data: DepartmentFormData) => {
-        if (modalMode === "create") {
-            const newDept = {
-                id: Math.max(...departments.map((d) => d.id)) + 1,
-                name: data.name,
-                head: data.head,
-                employees: Number.parseInt(data.employees) || 0,
-                onsite: Number.parseInt(data.onsite) || 0,
-                hybrid: Number.parseInt(data.hybrid) || 0,
-                remote: Number.parseInt(data.remote) || 0,
-                rate: "0%",
+    const handleSubmitDepartment = async (data: any) => {
+        try {
+            if (modalMode === "create") {
+                await createMutation.mutateAsync(data)
+                toast.success("Department created successfully")
+            } else {
+                await updateMutation.mutateAsync({ id: editingDept.id, data })
+                toast.success("Department updated successfully")
             }
-            setDepartments([...departments, newDept])
-        } else {
-            setDepartments(
-                departments.map((dept) =>
-                    dept.id === selectedDept
-                        ? {
-                            ...dept,
-                            name: data.name,
-                            head: data.head,
-                            employees: Number.parseInt(data.employees) || 0,
-                            onsite: Number.parseInt(data.onsite) || 0,
-                            hybrid: Number.parseInt(data.hybrid) || 0,
-                            remote: Number.parseInt(data.remote) || 0,
-                        }
-                        : dept,
-                ),
-            )
+            setIsModalOpen(false)
+        } catch (error) {
+            toast.error("An error occurred")
         }
     }
 
-    const selectedDeptData = departments.find((d) => d.id === selectedDept)
+    const selectedDeptData = departments.find((d: any) => d.id === selectedDeptId)
+
+    // Calculate aggregate stats
+    const totalEmployees = departments.reduce((acc: number, d: any) => acc + (d.employees || 0), 0)
+    const avgAttendance = departments.length > 0
+        ? (departments.reduce((acc: number, d: any) => acc + (parseFloat(d.rate) || 0), 0) / departments.length).toFixed(1)
+        : "0"
 
     const stats = [
-        { label: "Total Departments", value: "6", icon: Building2, color: "text-blue-600" },
-        { label: "Total Employees", value: "62", icon: Users, color: "text-green-600" },
-        { label: "Avg. Attendance", value: "93.2%", icon: TrendingUp, color: "text-purple-600" },
-        { label: "On-site Days", value: "45", icon: MapPin, color: "text-orange-600" },
+        { label: "Total Departments", value: departments.length.toString(), icon: Building2, color: "text-blue-600" },
+        { label: "Total Employees", value: totalEmployees.toString(), icon: Users, color: "text-green-600" },
+        { label: "Avg. Attendance", value: `${avgAttendance}%`, icon: TrendingUp, color: "text-purple-600" },
+        { label: "Organization Units", value: departments.length.toString(), icon: Building2, color: "text-orange-600" },
+    ]
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    // Data for charts
+    const departmentAttendanceData = departments.map((d: any) => ({
+        dept: d.name,
+        present: d.presentToday || 0,
+        total: d.employees || 0
+    }))
+
+    const workModeDistribution = [
+        { name: "On-site", value: departments.reduce((acc: number, d: any) => acc + (d.onsite || 0), 0), fill: "var(--color-chart-1)" },
+        { name: "Hybrid", value: departments.reduce((acc: number, d: any) => acc + (d.hybrid || 0), 0), fill: "var(--color-chart-2)" },
+        { name: "Remote", value: departments.reduce((acc: number, d: any) => acc + (d.remote || 0), 0), fill: "var(--color-chart-3)" },
     ]
 
     return (
@@ -156,13 +154,12 @@ export default function DepartmentsPage() {
                                 <h3 className="text-lg font-serif mb-4">Department Attendance Status</h3>
                                 <ChartContainer config={chartConfig} className="h-80">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={departmentAttendance}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                                            <XAxis dataKey="dept" stroke="var(--color-muted-foreground)" />
-                                            <YAxis stroke="var(--color-muted-foreground)" />
+                                        <BarChart data={departmentAttendanceData}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                                            <XAxis dataKey="dept" stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
+                                            <YAxis stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                                             <ChartTooltip content={<ChartTooltipContent />} />
-                                            <Bar dataKey="present" fill="var(--color-chart-1)" radius={[8, 8, 0, 0]} />
-                                            <Bar dataKey="late" fill="var(--color-chart-4)" radius={[8, 8, 0, 0]} />
+                                            <Bar dataKey="present" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} barSize={40} />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </ChartContainer>
@@ -175,20 +172,18 @@ export default function DepartmentsPage() {
                                 <h3 className="text-lg font-serif mb-4">Today's Summary</h3>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center pb-3 border-b border-border/20">
-                                        <span className="text-sm text-muted-foreground">Total Present</span>
-                                        <Badge className="bg-green-100 text-green-700">57/62</Badge>
+                                        <span className="text-sm text-muted-foreground">Total Active</span>
+                                        <Badge className="bg-green-100 text-green-700">
+                                            {departments.reduce((acc: number, d: any) => acc + (d.presentToday || 0), 0)}/{totalEmployees}
+                                        </Badge>
                                     </div>
                                     <div className="flex justify-between items-center pb-3 border-b border-border/20">
-                                        <span className="text-sm text-muted-foreground">Absent</span>
-                                        <Badge variant="outline">3</Badge>
-                                    </div>
-                                    <div className="flex justify-between items-center pb-3 border-b border-border/20">
-                                        <span className="text-sm text-muted-foreground">Late</span>
-                                        <Badge className="bg-yellow-100 text-yellow-700">2</Badge>
+                                        <span className="text-sm text-muted-foreground">Departments</span>
+                                        <Badge variant="outline">{departments.length}</Badge>
                                     </div>
                                     <div className="flex justify-between items-center pt-3">
                                         <span className="text-sm font-semibold">Avg. Rate</span>
-                                        <span className="text-lg font-serif text-green-600">91.9%</span>
+                                        <span className="text-lg font-serif text-green-600">{avgAttendance}%</span>
                                     </div>
                                 </div>
                             </Card>
@@ -200,68 +195,82 @@ export default function DepartmentsPage() {
                 <TabsContent value="list" className="space-y-6">
                     <div className="flex justify-between items-center">
                         <h3 className="text-lg font-serif">All Departments</h3>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                                <Filter className="w-4 h-4" />
-                                Filter
-                            </Button>
-                            <Button size="sm" className="gap-2" onClick={handleNewDepartment}>
-                                <Plus className="w-4 h-4" />
-                                New Department
-                            </Button>
+                        {isAuthorized && (
+                            <div className="flex gap-2">
+                                <Button size="sm" className="gap-2" onClick={handleNewDepartment}>
+                                    <Plus className="w-4 h-4" />
+                                    New Department
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {departments.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {departments.map((dept: any) => (
+                                <Card
+                                    key={dept.id}
+                                    className={`p-6 border cursor-pointer transition-all ${selectedDeptId === dept.id ? "border-primary bg-primary/5" : "border-border/40 hover:border-border/60"
+                                        }`}
+                                    onClick={() => setSelectedDeptId(dept.id)}
+                                >
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex-1">
+                                            <h4 className="font-serif text-lg mb-1">{dept.name}</h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                Head: {dept.manager ? `${dept.manager.firstName} ${dept.manager.lastName}` : "No head assigned"}
+                                            </p>
+                                        </div>
+                                        <Badge className={dept.rate === "100%" ? "bg-green-100 text-green-700" : ""}>{dept.rate}</Badge>
+                                    </div>
+
+                                    <div className="space-y-3 border-t border-border/20 pt-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-muted-foreground">Total Employees</span>
+                                            <span className="font-serif">{dept.employees}</span>
+                                        </div>
+                                        <div className="flex gap-2 flex-wrap">
+                                            <Badge variant="secondary" className="text-xs">On-site: {dept.onsite}</Badge>
+                                            <Badge variant="secondary" className="text-xs">Hybrid: {dept.hybrid}</Badge>
+                                            <Badge variant="secondary" className="text-xs">Remote: {dept.remote}</Badge>
+                                        </div>
+
+                                        {isAuthorized && selectedDeptId === dept.id && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="w-full mt-4 rounded-lg bg-transparent"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleEditDepartment(dept)
+                                                }}
+                                            >
+                                                Edit Department
+                                            </Button>
+                                        )}
+                                    </div>
+                                </Card>
+                            ))}
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {departments.map((dept) => (
-                            <Card
-                                key={dept.id}
-                                className={`p-6 border cursor-pointer transition-all ${selectedDept === dept.id ? "border-primary bg-primary/5" : "border-border/40 hover:border-border/60"
-                                    }`}
-                                onClick={() => setSelectedDept(dept.id)}
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex-1">
-                                        <h4 className="font-serif text-lg mb-1">{dept.name}</h4>
-                                        <p className="text-sm text-muted-foreground">Head: {dept.head}</p>
-                                    </div>
-                                    <Badge className={dept.rate === "100%" ? "bg-green-100 text-green-700" : ""}>{dept.rate}</Badge>
-                                </div>
-
-                                <div className="space-y-3 border-t border-border/20 pt-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm text-muted-foreground">Total Employees</span>
-                                        <span className="font-serif">{dept.employees}</span>
-                                    </div>
-                                    <div className="flex gap-2 flex-wrap">
-                                        <Badge variant="secondary" className="text-xs">
-                                            On-site: {dept.onsite}
-                                        </Badge>
-                                        <Badge variant="secondary" className="text-xs">
-                                            Hybrid: {dept.hybrid}
-                                        </Badge>
-                                        <Badge variant="secondary" className="text-xs">
-                                            Remote: {dept.remote}
-                                        </Badge>
-                                    </div>
-
-                                    {selectedDept === dept.id && (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="w-full mt-4 rounded-lg bg-transparent"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleEditDepartment(dept)
-                                            }}
-                                        >
-                                            Edit Department
-                                        </Button>
-                                    )}
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
+                    ) : (
+                        <Card className="p-12 border-dashed border-2 flex flex-col items-center justify-center text-center space-y-4 bg-transparent">
+                            <div className="p-4 rounded-full bg-secondary/50">
+                                <Building2 className="w-8 h-8 text-muted-foreground" />
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="font-serif text-xl">No Departments Found</h3>
+                                <p className="text-sm text-muted-foreground max-w-xs">
+                                    Your organization doesn't have any departments yet. {isAuthorized && "Create one to get started."}
+                                </p>
+                            </div>
+                            {isAuthorized && (
+                                <Button onClick={handleNewDepartment} size="sm" className="rounded-xl">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add First Department
+                                </Button>
+                            )}
+                        </Card>
+                    )}
                 </TabsContent>
 
                 {/* Analytics Tab */}
@@ -307,7 +316,9 @@ export default function DepartmentsPage() {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-lg font-serif">{mode.value}</p>
-                                            <p className="text-xs text-muted-foreground">{Math.round((mode.value / 62) * 100)}% of total</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {totalEmployees > 0 ? Math.round((mode.value / totalEmployees) * 100) : 0}% of total
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
@@ -332,19 +343,29 @@ export default function DepartmentsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {departments.map((dept) => (
-                                        <tr key={dept.id} className="border-b border-border/10 hover:bg-secondary/20 transition-colors">
-                                            <td className="py-4 text-sm font-medium">{dept.name}</td>
-                                            <td className="py-4 text-sm text-muted-foreground">{dept.head}</td>
-                                            <td className="py-4 text-sm">{dept.employees}</td>
-                                            <td className="py-4 text-sm">{dept.onsite}</td>
-                                            <td className="py-4 text-sm">{dept.hybrid}</td>
-                                            <td className="py-4 text-sm">{dept.remote}</td>
-                                            <td className="py-4">
-                                                <Badge className={dept.rate === "100%" ? "bg-green-100 text-green-700" : ""}>{dept.rate}</Badge>
+                                    {departments.length > 0 ? (
+                                        departments.map((dept: any) => (
+                                            <tr key={dept.id} className="border-b border-border/10 hover:bg-secondary/20 transition-colors">
+                                                <td className="py-4 text-sm font-medium">{dept.name}</td>
+                                                <td className="py-4 text-sm text-muted-foreground">
+                                                    {dept.manager ? `${dept.manager.firstName} ${dept.manager.lastName}` : "N/A"}
+                                                </td>
+                                                <td className="py-4 text-sm">{dept.employees}</td>
+                                                <td className="py-4 text-sm">{dept.onsite}</td>
+                                                <td className="py-4 text-sm">{dept.hybrid}</td>
+                                                <td className="py-4 text-sm">{dept.remote}</td>
+                                                <td className="py-4">
+                                                    <Badge className={dept.rate === "100%" ? "bg-green-100 text-green-700" : ""}>{dept.rate}</Badge>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className="py-12 text-center text-muted-foreground italic">
+                                                No departmental data available for comparison
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>

@@ -14,34 +14,27 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useUsersQuery } from "@/lib/queries/presence-queries"
+
 interface DepartmentModalProps {
     isOpen: boolean
     onClose: () => void
-    onSubmit: (data: DepartmentFormData) => void
-    initialData?: DepartmentFormData
+    onSubmit: (data: any) => void
+    initialData?: any
     mode?: "create" | "edit"
-}
-
-export interface DepartmentFormData {
-    name: string
-    head: string
-    employees: string
-    onsite: string
-    hybrid: string
-    remote: string
 }
 
 export function DepartmentModal({ isOpen, onClose, onSubmit, initialData, mode = "create" }: DepartmentModalProps) {
     const { toast } = useToast()
+    const { data: users = [] } = useUsersQuery()
+    console.log(users)
     const [loading, setLoading] = React.useState(false)
-    const [formData, setFormData] = React.useState<DepartmentFormData>(
+    const [formData, setFormData] = React.useState<any>(
         initialData || {
             name: "",
-            head: "",
-            employees: "",
-            onsite: "",
-            hybrid: "",
-            remote: "",
+            managerId: "",
+            description: "",
         },
     )
 
@@ -51,27 +44,31 @@ export function DepartmentModal({ isOpen, onClose, onSubmit, initialData, mode =
         } else {
             setFormData({
                 name: "",
-                head: "",
-                employees: "",
-                onsite: "",
-                hybrid: "",
-                remote: "",
+                managerId: "",
+                description: "",
             })
         }
     }, [initialData, isOpen])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
-        setFormData((prev) => ({
+        setFormData((prev: any) => ({
             ...prev,
             [name]: value,
+        }))
+    }
+
+    const handleManagerChange = (value: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            managerId: value,
         }))
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!formData.name || !formData.head) {
+        if (!formData.name || !formData.managerId) {
             toast({
                 title: "Validation Error",
                 description: "Please fill in all required fields",
@@ -81,16 +78,18 @@ export function DepartmentModal({ isOpen, onClose, onSubmit, initialData, mode =
         }
 
         setLoading(true)
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 800))
-        setLoading(false)
-
-        onSubmit(formData)
-        toast({
-            title: mode === "create" ? "Department Created" : "Department Updated",
-            description: `${formData.name} has been successfully ${mode === "create" ? "created" : "updated"}.`,
-        })
-        onClose()
+        try {
+            await onSubmit(formData)
+            onClose()
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to process department",
+                variant: "destructive",
+            })
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -122,75 +121,25 @@ export function DepartmentModal({ isOpen, onClose, onSubmit, initialData, mode =
                         />
                     </div>
 
-                    {/* Department Head */}
+                    {/* Department Head (Manager Selection) */}
                     <div className="space-y-2">
                         <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                             Department Head *
                         </Label>
-                        <Input
-                            name="head"
-                            value={formData.head}
-                            onChange={handleChange}
-                            placeholder="e.g., Sarah Mitchell"
-                            className="h-11 rounded-xl border-border/30 bg-secondary/10"
-                        />
-                    </div>
+                        <Select value={formData.managerId} onValueChange={handleManagerChange}>
+                            <SelectTrigger className="h-11 rounded-xl border-border/30 bg-secondary/10">
+                                <SelectValue placeholder="Select a manager" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
 
-                    {/* Total Employees */}
-                    <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                            Total Employees
-                        </Label>
-                        <Input
-                            name="employees"
-                            type="number"
-                            value={formData.employees}
-                            onChange={handleChange}
-                            placeholder="24"
-                            className="h-11 rounded-xl border-border/30 bg-secondary/10"
-                        />
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-secondary/20 border border-border/20 space-y-4">
-                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">
-                            Work Mode Distribution
-                        </p>
-
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-semibold text-muted-foreground">On-site</Label>
-                                <Input
-                                    name="onsite"
-                                    type="number"
-                                    value={formData.onsite}
-                                    onChange={handleChange}
-                                    placeholder="18"
-                                    className="h-10 rounded-lg border-border/30 bg-background text-sm"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-semibold text-muted-foreground">Hybrid</Label>
-                                <Input
-                                    name="hybrid"
-                                    type="number"
-                                    value={formData.hybrid}
-                                    onChange={handleChange}
-                                    placeholder="4"
-                                    className="h-10 rounded-lg border-border/30 bg-background text-sm"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-semibold text-muted-foreground">Remote</Label>
-                                <Input
-                                    name="remote"
-                                    type="number"
-                                    value={formData.remote}
-                                    onChange={handleChange}
-                                    placeholder="2"
-                                    className="h-10 rounded-lg border-border/30 bg-background text-sm"
-                                />
-                            </div>
-                        </div>
+                                <SelectValue placeholder="Select a Department Head" />
+                                {users.map((user) => (
+                                    <SelectItem key={user.id} value={user.id}>
+                                        {user.firstName} ({user.role})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <DialogFooter className="gap-3 pt-4">

@@ -214,19 +214,28 @@ function CEODashboard({ stats }: { stats: any }) {
                         <CardTitle className="font-serif text-xl">Top Departments</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {['Engineering', 'Marketing', 'Product', 'Sales'].map((dept, i) => (
-                            <div key={dept} className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium leading-none">{dept}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {98 - i * 2}% attendance rate
-                                    </p>
+                        {(stats?.departmentStats || []).length > 0 ? (
+                            stats.departmentStats.map((dept: any) => (
+                                <div key={dept.name} className="flex items-center justify-between">
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-medium leading-none">{dept.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {dept.attendanceRate}% attendance rate
+                                        </p>
+                                    </div>
+                                    <Badge
+                                        variant="secondary"
+                                        className={`rounded-lg ${dept.attendanceRate >= 90 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}
+                                    >
+                                        {dept.attendanceRate >= 90 ? 'Optimal' : 'Needs Review'}
+                                    </Badge>
                                 </div>
-                                <Badge variant="secondary" className="rounded-lg bg-green-100 text-green-700">
-                                    Optimal
-                                </Badge>
+                            ))
+                        ) : (
+                            <div className="text-center py-10 text-muted-foreground italic text-sm">
+                                No department data available
                             </div>
-                        ))}
+                        )}
                     </CardContent>
                 </Card>
             </div>

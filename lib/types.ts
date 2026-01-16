@@ -106,6 +106,7 @@ export interface CompanyStats {
   performanceIndex: number;
   pendingRequests: number;
   trendData?: { name: string; attendance: number }[];
+  departmentStats?: { name: string; attendanceRate: number }[];
 }
 
 export interface TeamMember extends User {

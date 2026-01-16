@@ -81,6 +81,39 @@ export class CompanyService {
             };
         }));
 
+        // Dynamic performance index calculation (example logic)
+        // Base score is attendance rate, with minor penalties for pending requests
+        const basePerformance = attendanceRate;
+        const penalty = Math.min(pendingRequests * 0.5, 10); // Max 10% penalty for pending work
+        const performanceIndex = Math.max(Math.min(basePerformance + (100 - attendanceRate) * 0.8 - penalty, 100), 0);
+
+        // Fetch department-wise attendance rates
+        const allDepts = await prisma.department.findMany({
+            where: { companyId }
+        });
+
+        const departmentStats = await Promise.all(allDepts.map(async (dept) => {
+            const [deptUserCount, presentInDept] = await Promise.all([
+                prisma.user.count({ where: { department: dept.name, companyId } }),
+                prisma.attendanceRecord.count({
+                    where: {
+                        user: { department: dept.name, companyId },
+                        date: today,
+                        status: { in: ['present', 'late'] }
+                    }
+                })
+            ]);
+
+            const rate = deptUserCount > 0
+                ? Math.round((presentInDept / deptUserCount) * 100)
+                : 0;
+
+            return {
+                name: dept.name,
+                attendanceRate: rate
+            };
+        }));
+
         return {
             totalEmployees,
             activeEmployees: presentToday,
@@ -89,8 +122,9 @@ export class CompanyService {
             pendingRequests,
             departments,
             attendanceRate,
-            performanceIndex: 94.2,
-            trendData
+            performanceIndex: parseFloat(performanceIndex.toFixed(1)),
+            trendData,
+            departmentStats
         };
     }
 }

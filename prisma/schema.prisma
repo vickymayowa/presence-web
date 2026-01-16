@@ -178,7 +178,7 @@ model LeaveRequest {
 
 model Department {
   id   String @id @default(uuid())
-  name String @unique
+  name String
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
@@ -190,6 +190,8 @@ model Department {
   headCount   Int
 
   createdAt DateTime @default(now())
+
+  @@unique([companyId, name])
 }
 
 model Notification {

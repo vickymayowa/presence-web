@@ -9,6 +9,7 @@ export const queryKeys = {
     users: ['users'] as const,
     user: (id: string) => ['user', id] as const,
     stats: ['stats'] as const,
+    departments: ['departments'] as const,
     attendance: ['attendance'] as const,
     leaves: ['leaves'] as const,
     notifications: (userId: string) => ['notifications', userId] as const,
@@ -18,10 +19,8 @@ export const queryKeys = {
 // --- QUERIES ---
 
 const getAuthHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('presence_auth_token') : null;
     return {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     };
 };
 
@@ -47,6 +46,19 @@ export function useCompanyStatsQuery() {
             return result.data as CompanyStats;
         },
         refetchInterval: 10000, // Real-time updates every 10 seconds
+    });
+}
+
+export function useDepartmentsQuery() {
+    return useQuery({
+        queryKey: queryKeys.departments,
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/departments`, { headers: getAuthHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch departments');
+            const result = await res.json();
+            return result.data as any[]; // You can define a stronger type if needed
+        },
+        refetchInterval: 10000, // Real-time
     });
 }
 
@@ -168,6 +180,44 @@ export function useCreateEmployeeMutation() {
         onSuccess: () => {
             // Invalidate and refetch users after creating a new employee
             queryClient.invalidateQueries({ queryKey: queryKeys.users });
+        },
+    });
+}
+
+export function useCreateDepartmentMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (department: { name: string; managerId: string; description?: string }) => {
+            const res = await fetch(`${API_BASE}/departments`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(department),
+            });
+            if (!res.ok) throw new Error('Failed to create department');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.departments });
+        },
+    });
+}
+
+export function useUpdateDepartmentMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id, data }: { id: string; data: any }) => {
+            const res = await fetch(`${API_BASE}/departments/${id}`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(data),
+            });
+            if (!res.ok) throw new Error('Failed to update department');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.departments });
         },
     });
 }
