@@ -71,7 +71,7 @@ export class SeedService {
         // 3. Seed Departments
         for (const dept of departments) {
             await prisma.department.upsert({
-                where: { name: dept.name },
+                where: { id: dept.id },
                 update: { headCount: dept.headCount },
                 create: {
                     id: dept.id,

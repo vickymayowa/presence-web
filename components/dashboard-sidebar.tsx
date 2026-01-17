@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { LogoutModal } from "@/components/logout-modal"
 import {
     Calendar,
     LayoutDashboard,
@@ -241,6 +242,15 @@ export function DashboardSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
+                        <LogoutModal
+                            // isOpen={showLogoutModal}
+                            onConfirm={() => {
+                                // setShowLogoutModal(false)
+                                window.location.href = "/aut"
+                            }}
+                        // onCancel={() => setShowLogoutModal(false)}
+                        // description={logoutReason}
+                        />
                         <SidebarMenuButton
                             tooltip="Logout"
                             onClick={handleLogout}
@@ -255,3 +265,7 @@ export function DashboardSidebar() {
         </Sidebar>
     )
 }
+
+
+
+// hey , i want to add the logout-modal.tsx i just design to the logout function on  the dashboard check the dashboard-sidebar i jsust made some changes you can refactor them 

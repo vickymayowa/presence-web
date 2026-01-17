@@ -3,6 +3,8 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { LogoutModal } from "@/components/logout-modal"
+import { useSessionCheck } from "@/hooks/use-session-check"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -32,6 +34,7 @@ import {
 } from "@/lib/queries/presence-queries"
 
 export default function DashboardPage() {
+    const { showLogoutModal, setShowLogoutModal, logoutReason } = useSessionCheck()
     const { user } = useAuth()
     const [attendanceModal, setAttendanceModal] = React.useState<{ isOpen: boolean; type: "in" | "out" }>({
         isOpen: false,
