@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { LogoutModal } from "@/components/logout-modal"
+import { useSessionCheck } from "@/hooks/use-session-check"
 import {
     Calendar,
     LayoutDashboard,
@@ -123,11 +124,16 @@ const roleColors: Record<UserRole, string> = {
 export function DashboardSidebar() {
     const pathname = usePathname()
     const { user, logout } = useAuth()
+    const { showLogoutModal, setShowLogoutModal, logoutReason } = useSessionCheck()
 
-    const handleLogout = React.useCallback(() => {
+    const handleLogout = () =>
+        setShowLogoutModal(current => current ? false : true)
+
+    const handleConfirmLogout = () => {
+        setShowLogoutModal(false)
         logout()
-    }, [logout])
-
+        window.location.href = "/auth/login"
+    }
     // ✅ Hook ALWAYS runs
     const initials = React.useMemo(() => {
         if (!user) return ""
@@ -142,68 +148,35 @@ export function DashboardSidebar() {
     const navConfig = navigationConfig[user.role]
 
     return (
-        <Sidebar variant="inset" collapsible="icon">
-            <SidebarHeader className="p-4">
-                <Link href="/dashboard" className="flex items-center gap-3 px-2">
-                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <ShieldCheck className="size-5" />
-                    </div>
-                    <span className="font-serif text-xl tracking-tight group-data-[collapsible=icon]:hidden">
-                        Presence
-                    </span>
-                </Link>
-            </SidebarHeader>
+        <>
+            <Sidebar variant="inset" collapsible="icon">
+                <SidebarHeader className="p-4">
+                    <Link href="/dashboard" className="flex items-center gap-3 px-2">
+                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                            <ShieldCheck className="size-5" />
+                        </div>
+                        <span className="font-serif text-xl tracking-tight group-data-[collapsible=icon]:hidden">
+                            Presence
+                        </span>
+                    </Link>
+                </SidebarHeader>
 
-            <SidebarContent>
-                {/* General Navigation */}
-                <SidebarGroup>
-                    <SidebarGroupLabel>General</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {navConfig.general.map((item) => (
-                                <SidebarMenuItem key={item.label}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        tooltip={item.label}
-                                        isActive={pathname === item.href}
-                                    >
-                                        <Link href={item.href}>
-                                            <item.icon />
-                                            <span>{item.label}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-
-                {/* Admin Navigation (for roles with admin access) */}
-                {navConfig.admin && (
+                <SidebarContent>
+                    {/* General Navigation */}
                     <SidebarGroup>
-                        <SidebarGroupLabel>
-                            {user.role === 'ceo' ? 'Executive' : user.role === 'hr' ? 'HR Admin' : 'Management'}
-                        </SidebarGroupLabel>
+                        <SidebarGroupLabel>General</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                {navConfig.admin.map((item) => (
+                                {navConfig.general.map((item) => (
                                     <SidebarMenuItem key={item.label}>
                                         <SidebarMenuButton
                                             asChild
                                             tooltip={item.label}
                                             isActive={pathname === item.href}
                                         >
-                                            <Link href={item.href} className="relative">
+                                            <Link href={item.href}>
                                                 <item.icon />
                                                 <span>{item.label}</span>
-                                                {'badge' in item && item.badge && (
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className="ml-auto size-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground group-data-[collapsible=icon]:hidden"
-                                                    >
-                                                        {item.badge}
-                                                    </Badge>
-                                                )}
                                             </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
@@ -211,61 +184,91 @@ export function DashboardSidebar() {
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
-                )}
-            </SidebarContent>
 
-            <SidebarFooter className="p-4">
-                <Separator className="mb-4" />
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" className="px-2" asChild>
-                            <Link href="/dashboard/profile">
-                                <Avatar className="size-8">
-                                    <AvatarImage src={user.avatar} />
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                                        {initials}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col gap-0.5 text-left group-data-[collapsible=icon]:hidden">
-                                    <span className="text-sm font-medium">
-                                        {user.firstName} {user.lastName}
-                                    </span>
-                                    <Badge
-                                        variant="secondary"
-                                        className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0 w-fit ${roleColors[user.role]}`}
-                                    >
-                                        {roleLabels[user.role]}
-                                    </Badge>
-                                </div>
-                                <ChevronRight className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <LogoutModal
-                            // isOpen={showLogoutModal}
-                            onConfirm={() => {
-                                // setShowLogoutModal(false)
-                                window.location.href = "/aut"
-                            }}
-                        // onCancel={() => setShowLogoutModal(false)}
-                        // description={logoutReason}
-                        />
-                        <SidebarMenuButton
-                            tooltip="Logout"
-                            onClick={handleLogout}
-                            className="text-muted-foreground hover:text-destructive"
-                        >
-                            <LogOut className="size-4" />
-                            <span className="group-data-[collapsible=icon]:hidden">Logout</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarFooter>
-        </Sidebar>
+                    {/* Admin Navigation (for roles with admin access) */}
+                    {navConfig.admin && (
+                        <SidebarGroup>
+                            <SidebarGroupLabel>
+                                {user.role === 'ceo' ? 'Executive' : user.role === 'hr' ? 'HR Admin' : 'Management'}
+                            </SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {navConfig.admin.map((item) => (
+                                        <SidebarMenuItem key={item.label}>
+                                            <SidebarMenuButton
+                                                asChild
+                                                tooltip={item.label}
+                                                isActive={pathname === item.href}
+                                            >
+                                                <Link href={item.href} className="relative">
+                                                    <item.icon />
+                                                    <span>{item.label}</span>
+                                                    {'badge' in item && item.badge && (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="ml-auto size-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground group-data-[collapsible=icon]:hidden"
+                                                        >
+                                                            {item.badge}
+                                                        </Badge>
+                                                    )}
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    )}
+                </SidebarContent>
+
+                <SidebarFooter className="p-4">
+                    <Separator className="mb-4" />
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton size="lg" className="px-2" asChild>
+                                <Link href="/dashboard/profile">
+                                    <Avatar className="size-8">
+                                        <AvatarImage src={user.avatar} />
+                                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                                            {initials}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col gap-0.5 text-left group-data-[collapsible=icon]:hidden">
+                                        <span className="text-sm font-medium">
+                                            {user.firstName} {user.lastName}
+                                        </span>
+                                        <Badge
+                                            variant="secondary"
+                                            className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0 w-fit ${roleColors[user.role]}`}
+                                        >
+                                            {roleLabels[user.role]}
+                                        </Badge>
+                                    </div>
+                                    <ChevronRight className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                tooltip="Logout"
+                                onClick={handleLogout}
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                            >
+                                <LogOut className="size-4" />
+                                <span className="group-data-[collapsible=icon]:hidden">Logout</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarFooter>
+            </Sidebar>
+            <LogoutModal
+                isOpen={showLogoutModal}
+                onConfirm={handleConfirmLogout}
+                onCancel={() => setShowLogoutModal(false)}
+                title="Sign Out"
+                description="Are you sure you want to sign out? You'll need to sign in again to access your attendance records."
+                reason="manual"
+            />
+        </>
     )
 }
-
-
-
-// hey , i want to add the logout-modal.tsx i just design to the logout function on  the dashboard check the dashboard-sidebar i jsust made some changes you can refactor them 

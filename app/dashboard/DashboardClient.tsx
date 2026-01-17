@@ -3,7 +3,6 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { LogoutModal } from "@/components/logout-modal"
 import { useSessionCheck } from "@/hooks/use-session-check"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -24,6 +23,17 @@ import {
     AlertCircle,
     Megaphone
 } from "lucide-react"
+
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    CartesianGrid,
+    Cell
+} from 'recharts'
 import { AttendanceModal } from "@/components/attendance-modal"
 import { BroadcastModal } from "@/components/broadcast-modal"
 import { useAuth } from "@/lib/auth-context"
@@ -112,16 +122,6 @@ export default function DashboardPage() {
     )
 }
 
-import {
-    ResponsiveContainer,
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    Tooltip,
-    CartesianGrid,
-    Cell
-} from 'recharts'
 
 function CEODashboard({ stats, onBroadcast }: { stats: any; onBroadcast: () => void }) {
     const data = stats?.trendData || [

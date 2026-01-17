@@ -23,9 +23,9 @@ export function LogoutModal({
   isOpen,
   onConfirm,
   onCancel,
-  title = "Session Ended",
-  description = "You were logged out because another device signed in.",
-  reason = "session-conflict",
+  title,
+  description,
+  reason,
 }: LogoutModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
@@ -51,13 +51,13 @@ export function LogoutModal({
         </DialogHeader>
 
         {/* Additional Info based on reason */}
-        <div className="bg-secondary/30 border border-border/40 rounded-xl p-5 text-center">
+        {/* <div className="bg-secondary/30 border border-border/40 rounded-xl p-5 text-center">
           <p className="text-sm text-muted-foreground font-light">
             {reason === "session-conflict" && "Your account was accessed from another location."}
             {reason === "inactivity" && "Your session has expired due to inactivity."}
             {reason === "manual" && "You have been successfully logged out."}
           </p>
-        </div>
+        </div> */}
 
         {/* Footer Actions */}
         <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
@@ -73,14 +73,9 @@ export function LogoutModal({
             className="flex-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
             <LogOut className="w-4 h-4" />
-            Sign In Again
+            Confirm
           </Button>
         </DialogFooter>
-
-        {/* Footer Text */}
-        <p className="text-center text-xs text-muted-foreground/60 font-light uppercase tracking-wider">
-          Your data is secure and encrypted
-        </p>
       </DialogContent>
     </Dialog>
   )
