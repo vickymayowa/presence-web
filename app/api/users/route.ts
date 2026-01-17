@@ -6,7 +6,6 @@ import { getSession } from "@/lib/utils/auth-utils";
 export async function GET(req: NextRequest) {
     try {
         const currentUser = getSession(req);
-
         if (!currentUser) {
             return ApiResponse.error("Unauthorized", 401);
         }

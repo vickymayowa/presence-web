@@ -171,6 +171,7 @@ export function useCreateEmployeeMutation() {
                 headers: getAuthHeaders(),
                 body: JSON.stringify(employee),
             });
+            console.log(res, "staff creation")
             if (!res.ok) {
                 const error = await res.json();
                 throw new Error(error.message || 'Failed to create employee');

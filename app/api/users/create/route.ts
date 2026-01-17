@@ -1,27 +1,11 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/lib/utils/api-response";
-import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { getSession } from "@/lib/utils/auth-utils";
 import { UserRole } from "@/lib/types";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-me";
-
-// Helper to extract user from token
-function getUserFromToken(req: NextRequest) {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return null;
-    }
-
-    const token = authHeader.substring(7);
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        return decoded;
-    } catch {
-        return null;
-    }
-}
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 // Helper to get default position based on role
 function getDefaultPosition(role: UserRole): string {
@@ -36,7 +20,7 @@ function getDefaultPosition(role: UserRole): string {
 
 export async function POST(req: NextRequest) {
     try {
-        const currentUser = getUserFromToken(req);
+        const currentUser = getSession(req);
 
         if (!currentUser) {
             return ApiResponse.error("Unauthorized", 401);
@@ -95,6 +79,7 @@ export async function POST(req: NextRequest) {
         );
 
     } catch (error: any) {
+        console.log(error)
         console.error("[Create User Error]:", error);
         return ApiResponse.internalError("Failed to create employee", error);
     }

@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
 
     try {
         const departments = await departmentService.getDepartments(session.companyId);
+        // console.log(departments)
         return ApiResponse.success(departments);
     } catch (error: any) {
         return ApiResponse.internalError("Failed to fetch departments", error);

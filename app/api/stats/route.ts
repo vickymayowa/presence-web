@@ -9,7 +9,6 @@ export async function GET(req: NextRequest) {
     if (!session) {
         return ApiResponse.unauthorized();
     }
-
     // Direct check for CEO or HR access
     if (session.role !== 'ceo' && session.role !== 'hr') {
         return ApiResponse.error("Forbidden: Authorized management access only", 403);

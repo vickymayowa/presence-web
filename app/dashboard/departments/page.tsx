@@ -77,6 +77,7 @@ export default function DepartmentsPage() {
 
     // Calculate aggregate stats
     const totalEmployees = departments.reduce((acc: number, d: any) => acc + (d.employees || 0), 0)
+    console.log(totalEmployees)
     const avgAttendance = departments.length > 0
         ? (departments.reduce((acc: number, d: any) => acc + (parseFloat(d.rate) || 0), 0) / departments.length).toFixed(1)
         : "0"
