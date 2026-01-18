@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         const { name, description, startTime, endTime, daysOfWeek, isActive } = body;
 
         if (!name || !startTime || !endTime || !daysOfWeek) {
-            return ApiResponse.badRequest("Missing required fields: name, startTime, endTime, daysOfWeek");
+            return ApiResponse.error("Missing required fields: name, startTime, endTime, daysOfWeek");
         }
 
         const window = await checkInWindowService.createWindow(session.companyId, {
@@ -88,7 +88,7 @@ export async function PATCH(req: NextRequest) {
         const { windowId, ...updateData } = body;
 
         if (!windowId) {
-            return ApiResponse.badRequest("Window ID is required");
+            return ApiResponse.error("Window ID is required");
         }
 
         const window = await checkInWindowService.updateWindow(windowId, updateData);
@@ -120,7 +120,7 @@ export async function DELETE(req: NextRequest) {
         const windowId = searchParams.get("windowId");
 
         if (!windowId) {
-            return ApiResponse.badRequest("Window ID is required");
+            return ApiResponse.error("Window ID is required");
         }
 
         await checkInWindowService.deleteWindow(windowId);
