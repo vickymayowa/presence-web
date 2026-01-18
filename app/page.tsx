@@ -192,7 +192,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-32 bg-secondary/10 rounded-[4rem] mx-6">
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-32 bg-secondary/10 rounded-[4rem] mx-6 lg:mx-auto">
         <div className="text-center mb-20 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
             <Book className="w-4 h-4 text-primary" />
@@ -319,7 +319,7 @@ export default function Home() {
       </section>
 
       {/* Stats Breakdown */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-32 bg-primary text-primary-foreground rounded-[4rem] mx-6 mb-32 shadow-2xl">
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-32 bg-primary text-primary-foreground rounded-[4rem] mx-6 lg:mx-auto mb-32 shadow-2xl">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-serif mb-4">Trusted by thousands worldwide</h2>
           <p className="text-lg text-primary-foreground/60 font-light">Numbers that speak for themselves</p>
