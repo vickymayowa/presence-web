@@ -240,3 +240,72 @@ export function useUpdateLeaveMutation() {
         },
     });
 }
+
+export function useNotificationsQuery(userId: string) {
+    return useQuery({
+        queryKey: queryKeys.notifications(userId),
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/notifications`, { headers: getAuthHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch notifications');
+            const result = await res.json();
+            return result.data as Notification[];
+        },
+        enabled: !!userId,
+        refetchInterval: 30000, // Check for new notifications every 30 seconds
+    });
+}
+
+export function useUpdateNotificationMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (vars: { id: string; title?: string; message?: string; type?: string; read?: boolean; all?: boolean }) => {
+            const res = await fetch(`${API_BASE}/notifications`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(vars),
+            });
+            if (!res.ok) throw new Error('Failed to update notification');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        },
+    });
+}
+
+export function useDeleteNotificationMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (vars: { id?: string; all?: boolean }) => {
+            const url = new URL(`${window.location.origin}${API_BASE}/notifications`);
+            if (vars.id) url.searchParams.append('id', vars.id);
+            if (vars.all) url.searchParams.append('all', 'true');
+
+            const res = await fetch(url.toString(), {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+            if (!res.ok) throw new Error('Failed to delete notification');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        },
+    });
+}
+
+export function useBroadcastNotificationMutation() {
+    return useMutation({
+        mutationFn: async (broadcast: { title: string; message: string; type: string; role?: string; actionUrl?: string }) => {
+            const res = await fetch(`${API_BASE}/notifications/broadcast`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(broadcast),
+            });
+            if (!res.ok) throw new Error('Failed to broadcast notification');
+            return res.json();
+        },
+    });
+}

@@ -147,6 +147,25 @@ export class NotificationService {
             data: { read: true }
         });
     }
+
+    async updateNotification(notificationId: string, data: { title?: string; message?: string; type?: any }) {
+        return prisma.notification.update({
+            where: { id: notificationId },
+            data
+        });
+    }
+
+    async deleteNotification(notificationId: string) {
+        return prisma.notification.delete({
+            where: { id: notificationId }
+        });
+    }
+
+    async deleteAllNotifications(userId: string) {
+        return prisma.notification.deleteMany({
+            where: { userId }
+        });
+    }
 }
 
 export const notificationService = new NotificationService();

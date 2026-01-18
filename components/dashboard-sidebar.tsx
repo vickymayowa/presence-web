@@ -76,6 +76,7 @@ const navigationConfig: Record<UserRole, { general: NavItem[]; admin?: NavItem[]
     hr: {
         general: [
             { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+            { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
             { icon: Users, label: "Employees", href: "/dashboard/employees" },
             { icon: Clock, label: "Attendance", href: "/dashboard/attendance" },
             { icon: FileText, label: "Leave Management", href: "/dashboard/leaves" },

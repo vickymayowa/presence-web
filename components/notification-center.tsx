@@ -21,43 +21,26 @@ import {
     Settings
 } from "lucide-react"
 import { usePushNotifications } from "@/hooks/use-push-notifications"
+import { useNotificationsQuery, useUpdateNotificationMutation } from "@/lib/queries/presence-queries"
+import { useAuth } from "@/lib/auth-context"
 import { formatDistanceToNow } from "date-fns"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export function NotificationCenter() {
+    const { user } = useAuth()
+    const router = useRouter()
     const { isSubscribed, subscribe } = usePushNotifications()
-    const [notifications, setNotifications] = React.useState<any[]>([])
-    const [unreadCount, setUnreadCount] = React.useState(0)
+    const { data: notifications = [], refetch } = useNotificationsQuery(user?.id || "")
+    const updateMutation = useUpdateNotificationMutation()
     const [open, setOpen] = React.useState(false)
 
-    const fetchNotifications = React.useCallback(async () => {
-        try {
-            const res = await fetch("/api/notifications")
-            if (res.ok) {
-                const { data } = await res.json()
-                setNotifications(data)
-                setUnreadCount(data.filter((n: any) => !n.read).length)
-            }
-        } catch (err) {
-            console.error("Failed to fetch notifications:", err)
-        }
-    }, [])
-
-    React.useEffect(() => {
-        fetchNotifications()
-        // Poll for notifications every 30 seconds
-        const interval = setInterval(fetchNotifications, 30000)
-        return () => clearInterval(interval)
-    }, [fetchNotifications])
+    const unreadCount = notifications.filter((n: any) => !n.read).length
 
     const markAsRead = async (id: string) => {
         try {
-            await fetch("/api/notifications", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id })
-            })
-            fetchNotifications()
+            await updateMutation.mutateAsync({ id, read: true })
+            refetch()
         } catch (err) {
             console.error("Failed to mark as read:", err)
         }
@@ -65,12 +48,8 @@ export function NotificationCenter() {
 
     const markAllAsRead = async () => {
         try {
-            await fetch("/api/notifications", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ all: true })
-            })
-            fetchNotifications()
+            await updateMutation.mutateAsync({ id: "all", all: true, read: true })
+            refetch()
             toast.success("All notifications marked as read")
         } catch (err) {
             console.error("Failed to mark all as read:", err)
@@ -126,7 +105,7 @@ export function NotificationCenter() {
                 <ScrollArea className="h-[400px]">
                     {notifications.length > 0 ? (
                         <div className="divide-y divide-border/10">
-                            {notifications.map((notification) => (
+                            {notifications.slice(0, 10).map((notification) => (
                                 <div
                                     key={notification.id}
                                     className={`p-4 flex gap-4 hover:bg-secondary/10 transition-colors cursor-pointer ${!notification.read ? 'bg-primary/5' : ''}`}
@@ -166,7 +145,14 @@ export function NotificationCenter() {
                 </ScrollArea>
 
                 <div className="p-3 bg-secondary/10 border-t border-border/20 text-center">
-                    <Button variant="link" className="text-[10px] h-auto p-0 font-bold uppercase tracking-widest text-muted-foreground hover:text-primary">
+                    <Button
+                        variant="link"
+                        className="text-[10px] h-auto p-0 font-bold uppercase tracking-widest text-muted-foreground hover:text-primary"
+                        onClick={() => {
+                            setOpen(false)
+                            router.push("/dashboard/notifications")
+                        }}
+                    >
                         View Notification History
                     </Button>
                 </div>
