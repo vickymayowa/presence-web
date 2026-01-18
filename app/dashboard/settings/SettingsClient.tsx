@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 
 export default function SettingsPage() {
     const { user } = useAuth()
@@ -93,7 +94,7 @@ export default function SettingsPage() {
                                         <SettingInput label="First Name" value={user.firstName} />
                                         <SettingInput label="Last Name" value={user.lastName} />
                                         <SettingInput label="Email Identity" value={user.email} disabled />
-                                        <SettingInput label="Official Position" value={user.position || "Senior Staff"} />
+                                        <SettingInput label="Official Position" value={user.position!} disabled />
                                     </div>
 
                                     <div className="pt-6 border-t border-border/10 flex justify-end">
