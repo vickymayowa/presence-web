@@ -7,7 +7,7 @@ The Presence API allows you to integrate attendance management functionality int
 ## Base URL
 
 ```
-https://api.presence.com/v1
+https://api.presence.com
 ```
 
 For local development:
@@ -51,6 +51,7 @@ X-RateLimit-Reset: 1642521600
 Authenticate a user and receive an access token.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -59,6 +60,7 @@ Authenticate a user and receive an access token.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -80,6 +82,7 @@ Authenticate a user and receive an access token.
 Check in an employee.
 
 **Request:**
+
 ```json
 {
   "userId": "user_123",
@@ -93,6 +96,7 @@ Check in an employee.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -110,6 +114,7 @@ Check in an employee.
 Check out an employee.
 
 **Request:**
+
 ```json
 {
   "userId": "user_123",
@@ -118,6 +123,7 @@ Check out an employee.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -143,6 +149,7 @@ Get attendance history for a user or company.
 - `offset` (optional): Pagination offset
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -181,6 +188,7 @@ Get attendance summary report.
 - `format` (optional): `json`, `csv`, or `pdf` (default: json)
 
 **Response:**
+
 ```json
 {
   "success": true,
