@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import ReactMarkdown from 'react-markdown'
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
@@ -85,60 +86,6 @@ export default function DocsPage() {
                 setDocContent('# Error\n\nCould not load documentation.')
             })
     }, [currentDoc])
-
-    // Simple markdown to HTML converter (enhanced implementation)
-    const renderMarkdown = (markdown: string) => {
-        if (!markdown) return ''
-
-        // 1. Split into blocks to handle code blocks separately
-        const parts = markdown.split(/(```[\s\S]*?```)/g)
-
-        return parts.map(part => {
-            // Handle code blocks
-            if (part.startsWith('```')) {
-                const match = part.match(/```(\w+)?\n([\s\S]*?)```/)
-                if (match) {
-                    const [, , code] = match
-                    return `<pre class="bg-secondary/50 p-4 rounded-lg my-4 overflow-x-auto"><code>${code.trim()}</code></pre>`
-                }
-                return part
-            }
-
-            // Handle normal markdown
-            let html = part
-
-            // Headers
-            html = html.replace(/^### (.*$)/gim, '<h3 class="text-2xl font-serif mt-8 mb-4">$1</h3>')
-            html = html.replace(/^## (.*$)/gim, '<h2 class="text-3xl font-serif mt-10 mb-6">$1</h2>')
-            html = html.replace(/^# (.*$)/gim, '<h1 class="text-5xl font-serif mt-12 mb-8">$1</h1>')
-
-            // Bold
-            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold">$1</strong>')
-
-            // Italic
-            html = html.replace(/\*([^*]+)\*/g, '<em class="italic">$1</em>')
-
-            // Links
-            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>')
-
-            // Inline code
-            html = html.replace(/`([^`]+)`/g, '<code class="bg-secondary/50 px-2 py-1 rounded text-sm">$1</code>')
-
-            // Lists - Bullets
-            html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<li class="ml-6 my-2 list-disc">$1</li>')
-
-            // Lists - Numbered
-            html = html.replace(/^\s*\d+\.\s+(.*$)/gim, '<li class="ml-6 my-2 list-decimal">$1</li>')
-
-            // Paragraphs - Split only on double newlines that aren't inside tags we just made
-            // This is still simple/fragile, but better than before
-            return html.split('\n\n').map(para => {
-                if (!para.trim()) return ''
-                if (para.startsWith('<')) return para
-                return `<p class="my-4 leading-relaxed text-muted-foreground">${para}</p>`
-            }).join('\n')
-        }).join('\n')
-    }
 
     return (
         <div className="min-h-screen bg-background">
@@ -228,10 +175,53 @@ export default function DocsPage() {
                 {/* Main Content */}
                 <main className="flex-1 p-8 lg:p-12 min-h-[calc(100vh-4rem)]">
                     <article className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
-                        <div
-                            dangerouslySetInnerHTML={{ __html: renderMarkdown(docContent) }}
-                            className="documentation-content"
-                        />
+                        <ReactMarkdown
+                            components={{
+                                h1: ({ node, ...props }) => <h1 className="text-5xl font-serif mt-12 mb-8" {...props} />,
+                                h2: ({ node, ...props }) => <h2 className="text-3xl font-serif mt-10 mb-6" {...props} />,
+                                h3: ({ node, ...props }) => <h3 className="text-2xl font-serif mt-8 mb-4" {...props} />,
+                                p: ({ node, ...props }) => <p className="my-4 leading-relaxed text-muted-foreground" {...props} />,
+                                a: ({ node, ...props }) => <a className="text-primary hover:underline" {...props} />,
+                                ul: ({ node, ...props }) => <ul className="list-disc ml-6 my-4 space-y-2" {...props} />,
+                                ol: ({ node, ...props }) => <ol className="list-decimal ml-6 my-4 space-y-2" {...props} />,
+                                li: ({ node, ...props }) => <li className="pl-1" {...props} />,
+                                code: ({ node, className, children, ...props }: any) => {
+                                    const match = /language-(\w+)/.exec(className || '')
+                                    // Basic check: if it's not a block code (no newlines), treat as inline
+                                    const isInline = !match && !String(children).includes('\n')
+
+                                    if (isInline) {
+                                        return <code className="bg-secondary/50 px-2 py-1 rounded text-sm text-foreground font-mono" {...props}>{children}</code>
+                                    }
+
+                                    return (
+                                        <div className="relative my-6 rounded-lg overflow-hidden bg-secondary/50 border border-border/50">
+                                            {/* Mac-style window controls */}
+                                            <div className="flex items-center justify-between px-4 py-2 bg-secondary/80 border-b border-border/50">
+                                                <div className="flex gap-1.5">
+                                                    <div className="w-3 h-3 rounded-full bg-red-500/20" />
+                                                    <div className="w-3 h-3 rounded-full bg-yellow-500/20" />
+                                                    <div className="w-3 h-3 rounded-full bg-green-500/20" />
+                                                </div>
+                                                <span className="text-xs text-muted-foreground font-medium uppercase">
+                                                    {match ? match[1] : 'text'}
+                                                </span>
+                                            </div>
+                                            <div className="p-4 overflow-x-auto">
+                                                <code className="text-sm font-mono leading-relaxed" {...props}>
+                                                    {children}
+                                                </code>
+                                            </div>
+                                        </div>
+                                    )
+                                },
+                                pre: ({ node, ...props }) => (
+                                    <span {...props} /> // Pass through, let code component handle styling wrapper
+                                )
+                            }}
+                        >
+                            {docContent}
+                        </ReactMarkdown>
                     </article>
 
                     {/* Footer Navigation */}

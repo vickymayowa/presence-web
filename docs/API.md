@@ -210,58 +210,7 @@ Get attendance summary report.
 }
 ```
 
-## Webhooks
 
-Presence can send webhook notifications when important events occur.
-
-### Setting Up Webhooks
-
-1. Navigate to **Settings** → **Webhooks**
-2. Click **Add Webhook**
-3. Enter your endpoint URL
-4. Select events to subscribe to
-5. Save and copy your webhook secret
-
-### Webhook Events
-
-- `attendance.checked_in`: Employee checked in
-- `attendance.checked_out`: Employee checked out
-- `leave.requested`: Leave request submitted
-- `leave.approved`: Leave request approved
-- `leave.rejected`: Leave request rejected
-- `schedule.updated`: Schedule modified
-
-### Webhook Payload
-
-```json
-{
-  "event": "attendance.checked_in",
-  "timestamp": "2026-01-18T08:30:00Z",
-  "data": {
-    "userId": "user_123",
-    "userName": "John Doe",
-    "checkInTime": "2026-01-18T08:30:00Z"
-  },
-  "signature": "sha256=..."
-}
-```
-
-### Verifying Webhooks
-
-Verify webhook signatures using your webhook secret:
-
-```javascript
-const crypto = require('crypto');
-
-function verifyWebhook(payload, signature, secret) {
-  const hmac = crypto.createHmac('sha256', secret);
-  const digest = 'sha256=' + hmac.update(payload).digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(digest)
-  );
-}
-```
 
 ## Error Codes
 
