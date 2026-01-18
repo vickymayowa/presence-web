@@ -97,14 +97,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased text-foreground bg-background">
+      <body className="font-sans antialiased text-foreground bg-background overflow-x-hidden">
         <Providers>
           <ProgressBar />
           <GlobalSessionCheck />
           {children}
           <Analytics />
           <PWARegistration />
-          <Toaster position="top-center" richColors />
+          <Toaster position="top-left" richColors />
         </Providers>
       </body>
     </html>
