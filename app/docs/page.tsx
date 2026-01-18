@@ -86,43 +86,58 @@ export default function DocsPage() {
             })
     }, [currentDoc])
 
-    // Simple markdown to HTML converter (basic implementation)
+    // Simple markdown to HTML converter (enhanced implementation)
     const renderMarkdown = (markdown: string) => {
-        let html = markdown
+        if (!markdown) return ''
 
-        // Headers
-        html = html.replace(/^### (.*$)/gim, '<h3 class="text-2xl font-serif mt-8 mb-4">$1</h3>')
-        html = html.replace(/^## (.*$)/gim, '<h2 class="text-3xl font-serif mt-10 mb-6">$1</h2>')
-        html = html.replace(/^# (.*$)/gim, '<h1 class="text-5xl font-serif mt-12 mb-8">$1</h1>')
+        // 1. Split into blocks to handle code blocks separately
+        const parts = markdown.split(/(```[\s\S]*?```)/g)
 
-        // Bold
-        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold">$1</strong>')
-
-        // Italic
-        html = html.replace(/\*([^*]+)\*/g, '<em class="italic">$1</em>')
-
-        // Links
-        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>')
-
-        // Code blocks
-        html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-secondary/50 p-4 rounded-lg my-4 overflow-x-auto"><code>$2</code></pre>')
-
-        // Inline code
-        html = html.replace(/`([^`]+)`/g, '<code class="bg-secondary/50 px-2 py-1 rounded text-sm">$1</code>')
-
-        // Lists
-        html = html.replace(/^\- (.*$)/gim, '<li class="ml-6 my-2">• $1</li>')
-        html = html.replace(/^\d+\. (.*$)/gim, '<li class="ml-6 my-2">$1</li>')
-
-        // Paragraphs
-        html = html.split('\n\n').map(para => {
-            if (para.startsWith('<h') || para.startsWith('<pre') || para.startsWith('<li')) {
-                return para
+        return parts.map(part => {
+            // Handle code blocks
+            if (part.startsWith('```')) {
+                const match = part.match(/```(\w+)?\n([\s\S]*?)```/)
+                if (match) {
+                    const [, , code] = match
+                    return `<pre class="bg-secondary/50 p-4 rounded-lg my-4 overflow-x-auto"><code>${code.trim()}</code></pre>`
+                }
+                return part
             }
-            return `<p class="my-4 leading-relaxed text-muted-foreground">${para}</p>`
-        }).join('\n')
 
-        return html
+            // Handle normal markdown
+            let html = part
+
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3 class="text-2xl font-serif mt-8 mb-4">$1</h3>')
+            html = html.replace(/^## (.*$)/gim, '<h2 class="text-3xl font-serif mt-10 mb-6">$1</h2>')
+            html = html.replace(/^# (.*$)/gim, '<h1 class="text-5xl font-serif mt-12 mb-8">$1</h1>')
+
+            // Bold
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold">$1</strong>')
+
+            // Italic
+            html = html.replace(/\*([^*]+)\*/g, '<em class="italic">$1</em>')
+
+            // Links
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>')
+
+            // Inline code
+            html = html.replace(/`([^`]+)`/g, '<code class="bg-secondary/50 px-2 py-1 rounded text-sm">$1</code>')
+
+            // Lists - Bullets
+            html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<li class="ml-6 my-2 list-disc">$1</li>')
+
+            // Lists - Numbered
+            html = html.replace(/^\s*\d+\.\s+(.*$)/gim, '<li class="ml-6 my-2 list-decimal">$1</li>')
+
+            // Paragraphs - Split only on double newlines that aren't inside tags we just made
+            // This is still simple/fragile, but better than before
+            return html.split('\n\n').map(para => {
+                if (!para.trim()) return ''
+                if (para.startsWith('<')) return para
+                return `<p class="my-4 leading-relaxed text-muted-foreground">${para}</p>`
+            }).join('\n')
+        }).join('\n')
     }
 
     return (
