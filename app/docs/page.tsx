@@ -38,6 +38,9 @@ const docStructure = [
         items: [
             { title: "Overview", href: "/docs?page=features", file: "features/overview.md" },
             { title: "Attendance Tracking", href: "/docs?page=attendance", file: "features/attendance-tracking.md" },
+            { title: "Leave Management", href: "/docs?page=leaves", file: "features/leave-management.md" },
+            { title: "Team Management", href: "/docs?page=teams", file: "features/team-management.md" },
+            { title: "Notifications", href: "/docs?page=notifications", file: "features/notifications.md" },
             { title: "Check-In Windows", href: "/docs?page=checkin-windows", file: "CHECKIN_WINDOWS.md" },
         ]
     },
@@ -65,6 +68,12 @@ export default function DocsPage() {
             setCurrentDoc('features/overview.md')
         } else if (page === 'attendance') {
             setCurrentDoc('features/attendance-tracking.md')
+        } else if (page === 'leaves') {
+            setCurrentDoc('features/leave-management.md')
+        } else if (page === 'teams') {
+            setCurrentDoc('features/team-management.md')
+        } else if (page === 'notifications') {
+            setCurrentDoc('features/notifications.md')
         } else if (page === 'checkin-windows') {
             setCurrentDoc('CHECKIN_WINDOWS.md')
         } else if (page === 'getting-started') {
