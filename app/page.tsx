@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import DashboardImage from "@/public/images/dashbboard-presence.png"
+import Image from "next/image"
 import {
   ArrowUpRight,
   Globe,
@@ -308,11 +310,15 @@ export default function Home() {
             </ul>
           </div>
           <div className="relative">
-            <div className="aspect-square rounded-[3rem] bg-gradient-to-br from-primary/20 to-purple-500/20 border border-border/40 flex items-center justify-center">
-              <div className="text-center space-y-4 p-12">
-                <BarChart3 className="w-24 h-24 mx-auto text-primary/60" />
-                <p className="text-sm text-muted-foreground font-light">Interactive Dashboard Preview</p>
-              </div>
+            <div className="aspect-square rounded-[3rem] bg-gradient-to-br from-primary/20 to-purple-500/20 border border-border/40 overflow-hidden relative shadow-2xl">
+              <Image
+                src={DashboardImage}
+                alt="Presence Dashboard Preview"
+                fill
+                loading="lazy"
+                className="object-cover object-top hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent pointer-events-none" />
             </div>
           </div>
         </div>
