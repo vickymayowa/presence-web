@@ -516,8 +516,8 @@ export default function EmployeesPage() {
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
                                         <SelectItem value="staff">Staff</SelectItem>
-                                        <SelectItem value="manager" disabled>Manager</SelectItem>
-                                        <SelectItem value="hr" disabled>HR</SelectItem>
+                                        <SelectItem value="manager">Manager</SelectItem>
+                                        <SelectItem value="hr">HR</SelectItem>
                                         {currentUser.role === 'ceo' && (
                                             <SelectItem value="ceo" disabled>CEO</SelectItem>
                                         )}
