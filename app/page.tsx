@@ -13,6 +13,7 @@ import {
   Star,
   TrendingUp,
   Lock,
+  Book,
   Sparkles,
   Calendar
 } from "lucide-react"
@@ -34,13 +35,19 @@ export default function Home() {
           <div className="flex items-center gap-10">
             <span className="font-serif text-3xl tracking-tight">Presence</span>
             <div className="hidden md:flex items-center gap-8">
-              {["Platform", "Solutions", "Pricing", "Company"].map((item) => (
+              {[
+                { name: "Platform", href: "#" },
+                { name: "Solutions", href: "#" },
+                { name: "Docs", href: "/docs" },
+                { name: "Pricing", href: "#" },
+                { name: "Company", href: "#" }
+              ].map((item) => (
                 <Link
-                  key={item}
-                  href="#"
+                  key={item.name}
+                  href={item.href}
                   className="text-xs font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {item}
+                  {item.name}
                 </Link>
               ))}
             </div>
@@ -181,6 +188,94 @@ export default function Home() {
               <p className="text-muted-foreground leading-relaxed font-light text-lg">{feature.description}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-32 bg-secondary/10 rounded-[4rem] mx-6">
+        <div className="text-center mb-20 space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+            <Book className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">How It Works</span>
+          </div>
+          <h2 className="text-5xl md:text-6xl font-serif tracking-tight">
+            Simple for <span className="text-muted-foreground/40">everyone</span>
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light">
+            Whether you're an employee, manager, or administrator, Presence makes attendance management effortless.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {[
+            {
+              role: "For Employees",
+              icon: Users,
+              color: "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400",
+              steps: [
+                { num: "01", title: "Check In", desc: "Open the app and check in with a single tap" },
+                { num: "02", title: "Verify", desc: "Quick selfie for AI verification (optional)" },
+                { num: "03", title: "Work", desc: "System automatically tracks your hours" },
+                { num: "04", title: "Check Out", desc: "Tap to check out when you leave" },
+              ]
+            },
+            {
+              role: "For Managers",
+              icon: BarChart3,
+              color: "bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400",
+              steps: [
+                { num: "01", title: "Monitor", desc: "View real-time team attendance" },
+                { num: "02", title: "Review", desc: "Approve leave requests quickly" },
+                { num: "03", title: "Analyze", desc: "Generate attendance reports" },
+                { num: "04", title: "Optimize", desc: "Adjust schedules as needed" },
+              ]
+            },
+            {
+              role: "For Admins",
+              icon: Shield,
+              color: "bg-orange-50 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400",
+              steps: [
+                { num: "01", title: "Configure", desc: "Set up check-in windows and policies" },
+                { num: "02", title: "Manage", desc: "Add and organize employees" },
+                { num: "03", title: "Control", desc: "Set permissions and access levels" },
+                { num: "04", title: "Analyze", desc: "Review company-wide analytics" },
+              ]
+            },
+          ].map((workflow, idx) => (
+            <div key={idx} className="bg-background rounded-[2rem] p-10 border border-border/40 hover:border-border/60 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
+              <div className="flex items-center gap-4 mb-8">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${workflow.color}`}>
+                  <workflow.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-serif">{workflow.role}</h3>
+              </div>
+              <div className="space-y-6">
+                {workflow.steps.map((step, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-sm font-bold text-primary">{step.num}</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-1">{step.title}</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-16 text-center">
+          <Link href="/docs">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-border/40 hover:bg-background px-12 py-8 rounded-full text-lg font-semibold group">
+              View Full Documentation
+              <ArrowUpRight className="ml-2 w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </Button>
+          </Link>
         </div>
       </section>
 
@@ -447,7 +542,10 @@ export default function Home() {
                 <ul className="space-y-4 text-muted-foreground font-light text-sm">
                   {section.links.map((link) => (
                     <li key={link}>
-                      <Link href="#" className="hover:text-foreground transition-colors">
+                      <Link
+                        href={link === "Documentation" ? "/docs" : "#"}
+                        className="hover:text-foreground transition-colors"
+                      >
                         {link}
                       </Link>
                     </li>
