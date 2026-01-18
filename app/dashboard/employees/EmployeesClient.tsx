@@ -26,7 +26,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
-import { useUsersQuery, useCreateEmployeeMutation } from "@/lib/queries/presence-queries"
+import { useUsersQuery, useCreateEmployeeMutation, useDepartmentsQuery } from "@/lib/queries/presence-queries"
 import {
     Table,
     TableBody,
@@ -63,7 +63,8 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function EmployeesPage() {
     const { user: currentUser } = useAuth()
-    const { data: allUsers = [], isLoading } = useUsersQuery()
+    const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
+    const { data: departmentsData = [] } = useDepartmentsQuery()
     const createEmployeeMutation = useCreateEmployeeMutation()
     const { toast } = useToast()
 
@@ -90,8 +91,6 @@ export default function EmployeesPage() {
 
     // Bulk selection state
     const [selectedEmployees, setSelectedEmployees] = React.useState<Set<string>>(new Set())
-
-    if (!currentUser) return null
 
     const handleAddEmployee = async () => {
         try {
@@ -201,6 +200,8 @@ export default function EmployeesPage() {
     React.useEffect(() => {
         setCurrentPage(1)
     }, [searchQuery, roleFilter, departmentFilter, statusFilter])
+
+    if (!currentUser) return null
 
     return (
         <div className="space-y-8">
@@ -347,7 +348,7 @@ export default function EmployeesPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {isLoading ? (
+                            {isUsersLoading ? (
                                 Array(5).fill(0).map((_, i) => (
                                     <TableRow key={i} className="animate-pulse">
                                         <TableCell colSpan={6} className="h-16 bg-secondary/10" />
@@ -489,13 +490,21 @@ export default function EmployeesPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="department">Department *</Label>
-                                <Input
-                                    id="department"
+                                <Select
                                     value={formData.department}
-                                    onChange={(e) => handleInputChange("department", e.target.value)}
-                                    placeholder="Engineering"
-                                    className="rounded-xl"
-                                />
+                                    onValueChange={(value) => handleInputChange("department", value)}
+                                >
+                                    <SelectTrigger className="rounded-xl">
+                                        <SelectValue placeholder="Select department" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {departmentsData.map((dept: any) => (
+                                            <SelectItem key={dept.id} value={dept.name}>
+                                                {dept.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 

@@ -7,11 +7,12 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
-import { Building2, Users, TrendingUp, MapPin, Filter, Plus } from "lucide-react"
+import { Building2, Users, TrendingUp, MapPin, Filter, Plus, UserCheck } from "lucide-react"
 import { DepartmentModal } from "@/components/department-modal"
 import { useAuth } from "@/lib/auth-context"
 import {
     useDepartmentsQuery,
+    useCompanyStatsQuery,
     useCreateDepartmentMutation,
     useUpdateDepartmentMutation
 } from "@/lib/queries/presence-queries"
@@ -28,7 +29,8 @@ const chartConfig = {
 
 export default function DepartmentsPage() {
     const { user } = useAuth()
-    const { data: departments = [], isLoading } = useDepartmentsQuery()
+    const { data: statsData, isLoading: isStatsLoading } = useCompanyStatsQuery()
+    const { data: departments = [], isLoading: isDeptsLoading } = useDepartmentsQuery()
     const createMutation = useCreateDepartmentMutation()
     const updateMutation = useUpdateDepartmentMutation()
 
@@ -75,21 +77,21 @@ export default function DepartmentsPage() {
 
     const selectedDeptData = departments.find((d: any) => d.id === selectedDeptId)
 
-    // Calculate aggregate stats
-    const totalEmployees = departments.reduce((acc: number, d: any) => acc + (d.employees || 0), 0)
-    console.log(totalEmployees)
-    const avgAttendance = departments.length > 0
+    // Calculate/Get aggregate stats
+    const totalEmployees = statsData?.totalEmployees || departments.reduce((acc: number, d: any) => acc + (d.employees || 0), 0)
+    const activeToday = statsData?.activeEmployees || departments.reduce((acc: number, d: any) => acc + (d.presentToday || 0), 0)
+    const avgAttendance = statsData?.attendanceRate || (departments.length > 0
         ? (departments.reduce((acc: number, d: any) => acc + (parseFloat(d.rate) || 0), 0) / departments.length).toFixed(1)
-        : "0"
+        : "0")
 
     const stats = [
         { label: "Total Departments", value: departments.length.toString(), icon: Building2, color: "text-blue-600" },
         { label: "Total Employees", value: totalEmployees.toString(), icon: Users, color: "text-green-600" },
+        { label: "Active Today", value: activeToday.toString(), icon: UserCheck, color: "text-orange-600" },
         { label: "Avg. Attendance", value: `${avgAttendance}%`, icon: TrendingUp, color: "text-purple-600" },
-        { label: "Organization Units", value: departments.length.toString(), icon: Building2, color: "text-orange-600" },
     ]
 
-    if (isLoading) {
+    if (isDeptsLoading || isStatsLoading) {
         return (
             <div className="flex items-center justify-center h-[50vh]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -368,6 +370,21 @@ export default function DepartmentsPage() {
                                         </tr>
                                     )}
                                 </tbody>
+                                {departments.length > 0 && (
+                                    <tfoot className="bg-secondary/10">
+                                        <tr className="font-semibold">
+                                            <td className="py-4 px-2 text-sm">Organization Total</td>
+                                            <td className="py-4 text-sm">--</td>
+                                            <td className="py-4 text-sm">{totalEmployees}</td>
+                                            <td className="py-4 text-sm">{departments.reduce((acc: number, d: any) => acc + (d.onsite || 0), 0)}</td>
+                                            <td className="py-4 text-sm">{departments.reduce((acc: number, d: any) => acc + (d.hybrid || 0), 0)}</td>
+                                            <td className="py-4 text-sm">{departments.reduce((acc: number, d: any) => acc + (d.remote || 0), 0)}</td>
+                                            <td className="py-4">
+                                                <Badge className="bg-primary/10 text-primary border-primary/20">{avgAttendance}%</Badge>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                )}
                             </table>
                         </div>
                     </Card>
