@@ -200,7 +200,7 @@ export class AuthService {
      * Remove sensitive internal data before returning to client.
      */
     private sanitizeUser(user: any) {
-        const { password, company, companyId, managerId, role, sessionId, ...sanitized } = user;
+        const { password, sessionId, ...sanitized } = user;
         return sanitized;
     }
 

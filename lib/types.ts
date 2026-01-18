@@ -114,3 +114,16 @@ export interface TeamMember extends User {
   todayStatus?: AttendanceRecord;
   monthlyAttendance?: number;
 }
+
+export interface CheckInWindow {
+  id: string;
+  companyId: string;
+  name: string;
+  description?: string;
+  startTime: string; // Format: "HH:mm"
+  endTime: string;   // Format: "HH:mm"
+  daysOfWeek: number[]; // Array of day numbers: 0=Sunday, 1=Monday, etc.
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

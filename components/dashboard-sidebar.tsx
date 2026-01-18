@@ -146,7 +146,7 @@ export function DashboardSidebar() {
     // ✅ Guard AFTER all hooks
     if (!user) return null
 
-    const navConfig = navigationConfig[user.role]
+    const navConfig = navigationConfig[user.role] || navigationConfig.staff
 
     return (
         <>

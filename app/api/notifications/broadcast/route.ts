@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
 
         return ApiResponse.success({ success: true }, "Broadcast sent successfully");
     } catch (error: any) {
+        console.log(error);
         return ApiResponse.internalError("Failed to send broadcast", error);
     }
 }
