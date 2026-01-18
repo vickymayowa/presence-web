@@ -15,81 +15,51 @@ Facial recognition technology prevents fraud and ensures accuracy.
 - Privacy-focused design
 - Works in various lighting conditions
 
-### 📅 Smart Scheduling
-Automated schedule creation with intelligent conflict detection.
-- Drag-and-drop schedule builder
-- Automatic conflict warnings
-- Optimal coverage suggestions
-- Shift swap requests
-- Template-based scheduling
-
-### 📊 Analytics & Reports
-Comprehensive insights into attendance patterns and trends.
-- Real-time dashboards
-- Custom report builder
-- Predictive analytics
-- Export to Excel/PDF
-- Payroll integration ready
+### ⏰ Check-In Windows
+Control when employees can check in.
+- Multiple time windows
+- Day-specific rules
 
 ### 🏖️ Leave Management
 Streamlined leave request and approval workflow.
 - Multiple leave types support
 - Balance tracking
 - Automated approval workflows
-- Calendar integration
-- Conflict detection
 
 ### 👥 Team Management
 Organize your workforce efficiently.
 - Department structure
 - Team hierarchies
 - Role-based access control
-- Employee profiles
 - Bulk operations
 
 ### 🔔 Notifications
 Stay informed with real-time alerts.
-- Mobile push notifications
-- Email notifications
 - In-app notifications
 - Custom notification rules
 - Notification history
 
-### ⏰ Check-In Windows
-Control when employees can check in.
-- Multiple time windows
-- Day-specific rules
-- Holiday management
-- Exception handling
-
-## Advanced Features
-
-### 🌍 Multi-Location Support
-Manage teams across different locations and time zones.
-
-### 🔗 Integrations
-Connect with your existing tools:
-- Payroll systems
-- HR management software
-- Calendar applications
-- Communication platforms
-
 ### 🔒 Security & Compliance
 Enterprise-grade security and compliance features:
 - Data encryption
-- GDPR compliance
-- SOC 2 certified
-- Regular security audits
 - Role-based access control
 
-### 📱 Mobile Apps
-Native apps for iOS and Android:
-- Offline support
-- Quick check-in
-- Push notifications
-- Biometric authentication
-
 ## Coming Soon
+ 
+### 📅 Smart Scheduling
+Automated schedule creation with intelligent conflict detection.
+- Drag-and-drop schedule builder
+- Automatic conflict warnings
+- Optimal coverage suggestions
+
+### 📱 Mobile Apps
+Native apps for iOS and Android. Currently, Presence is fully responsive and works great in mobile browsers.
+
+### 🔗 Integrations
+Connect with your existing tools like Payroll systems and HR management software.
+
+### 🌍 Multi-Location Support
+Manage teams across different locations and time zones.
 
 ### 🎮 Gamification
 Make attendance fun with achievements and rewards.
