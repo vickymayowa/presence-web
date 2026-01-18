@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { ChevronRight } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -76,8 +77,7 @@ export default function ProfilePage() {
         year: 'numeric',
     })
 
-    const companyName = user.companyId === 'comp-001' ? 'Presence Inc.' : 'Acme Corp'; // Simplified for demo
-    const companySlug = user.companyId === 'comp-001' ? 'presence' : 'acme';
+    const companyName = user.companyId === 'comp-001' ? 'Presence Inc.' : 'Acme Corp';
 
     const handleSave = async () => {
         setIsSaving(true)
@@ -87,276 +87,305 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="space-y-8 max-w-4xl">
-            {/* Page Header */}
-            <div>
-                <h1 className="text-3xl md:text-4xl font-serif tracking-tight">Profile</h1>
-                <p className="text-muted-foreground font-light mt-1">
-                    Manage your account settings and preferences
-                </p>
+        <div className="space-y-10 pb-12 max-w-6xl mx-auto">
+            {/* Elegant Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border/10 pb-8">
+                <div className="space-y-2">
+                    <h1 className="text-4xl md:text-5xl font-serif tracking-tight">Personal Workspace</h1>
+                    <p className="text-lg text-muted-foreground font-light max-w-xl">
+                        Manage your professional presence, security credentials, and organizational preferences.
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant={isEditing ? "default" : "outline"}
+                        className="rounded-2xl h-12 px-8 font-medium transition-all"
+                        onClick={() => setIsEditing(!isEditing)}
+                    >
+                        {isEditing ? 'Cancel Editing' : 'Edit Information'}
+                    </Button>
+                </div>
             </div>
 
-            {/* Profile Overview Card */}
-            <Card className="border-border/30 overflow-hidden">
-                {/* Cover/Background */}
-                <div className="h-32 bg-gradient-to-br from-primary/20 via-primary/10 to-secondary/20" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column: Essential Info & Stats */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Premium Profile Card */}
+                    <Card className="border-border/30 overflow-hidden bg-gradient-to-br from-background to-secondary/5 shadow-2xl shadow-primary/5">
+                        <div className="h-40 relative overflow-hidden bg-primary/10">
+                            {/* Decorative Pattern */}
+                            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+                            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                        </div>
 
-                <CardContent className="relative px-6 pb-6">
-                    {/* Avatar */}
-                    <div className="absolute -top-12 left-6">
-                        <div className="relative group">
-                            <Avatar className="size-24 ring-4 ring-background shadow-xl">
-                                <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-semibold">
-                                    {initials}
-                                </AvatarFallback>
-                            </Avatar>
-                            <button className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Camera className="size-6 text-white" />
-                            </button>
-                        </div>
-                    </div>
+                        <CardContent className="relative px-8 pb-8">
+                            <div className="flex flex-col md:flex-row gap-8 -mt-12">
+                                <div className="relative shrink-0 mx-auto md:mx-0">
+                                    <Avatar className="size-32 ring-8 ring-background shadow-2xl transition-transform hover:scale-105 duration-500">
+                                        <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-serif">
+                                            {initials}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <button className="absolute bottom-2 right-2 p-2 bg-primary text-primary-foreground rounded-full shadow-lg border-2 border-background hover:bg-primary/90 transition-colors">
+                                        <Camera className="size-4" />
+                                    </button>
+                                </div>
 
-                    {/* Info */}
-                    <div className="pt-14 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                        <div>
-                            <div className="flex items-center gap-3 mb-1">
-                                <h2 className="text-2xl font-serif">{user.firstName} {user.lastName}</h2>
-                                <Badge className={`text-[10px] uppercase font-bold tracking-wider ${roleColors[user.role]}`}>
-                                    {user.role}
-                                </Badge>
-                            </div>
-                            <p className="text-muted-foreground">{user.position}</p>
-                            <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                                <span className="flex items-center gap-1.5">
-                                    <Building2 className="size-4" />
-                                    {companyName} • {user.department}
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Calendar className="size-4" />
-                                    Joined {joinedDate}
-                                </span>
-                            </div>
-                        </div>
-                        <Button
-                            variant={isEditing ? "default" : "outline"}
-                            className="rounded-xl"
-                            onClick={() => setIsEditing(!isEditing)}
-                        >
-                            {isEditing ? 'Cancel' : 'Edit Profile'}
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                                <div className="flex-1 space-y-4 text-center md:text-left pt-4">
+                                    <div>
+                                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-1">
+                                            <h2 className="text-3xl font-serif">{user.firstName} {user.lastName}</h2>
+                                            <Badge className={`text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full ${roleColors[user.role]}`}>
+                                                {roleLabels[user.role]}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xl text-muted-foreground font-light">{user.position}</p>
+                                    </div>
 
-            {/* Personal Information */}
-            <Card className="border-border/30">
-                <CardHeader>
-                    <CardTitle className="text-xl font-serif">Personal Information</CardTitle>
-                    <CardDescription>Update your personal details</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label>First Name</Label>
-                            <Input
-                                value={formData.firstName}
-                                onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                                disabled={!isEditing}
-                                className="h-11 rounded-xl"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Last Name</Label>
-                            <Input
-                                value={formData.lastName}
-                                onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                                disabled={!isEditing}
-                                className="h-11 rounded-xl"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Email Address</Label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                                <Input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                    disabled={!isEditing}
-                                    className="h-11 rounded-xl pl-10"
-                                />
+                                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 text-sm text-muted-foreground pt-2">
+                                        <span className="flex items-center gap-2">
+                                            <Building2 className="size-4 text-primary/60" />
+                                            {companyName} • {user.department}
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <MapPin className="size-4 text-primary/60" />
+                                            Lagos Head Office
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <Calendar className="size-4 text-primary/60" />
+                                            Joined {joinedDate}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Phone Number</Label>
-                            <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                                <Input
-                                    type="tel"
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                                    disabled={!isEditing}
-                                    className="h-11 rounded-xl pl-10"
-                                    placeholder="+1 (555) 000-0000"
-                                />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Department</Label>
-                            <div className="relative">
-                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                                <Input
-                                    value={formData.department}
-                                    disabled
-                                    className="h-11 rounded-xl pl-10 bg-secondary/30"
-                                />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Position</Label>
-                            <Input
-                                value={formData.position}
-                                disabled
-                                className="h-11 rounded-xl bg-secondary/30"
-                            />
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
 
-                    {isEditing && (
-                        <div className="flex justify-end gap-3 pt-4">
-                            <Button variant="outline" className="rounded-xl" onClick={() => setIsEditing(false)}>
-                                Cancel
+                    {/* Detailed Information Form */}
+                    <Card className="border-border/30 overflow-hidden">
+                        <CardHeader className="bg-secondary/10 border-b border-border/5">
+                            <CardTitle className="text-xl font-serif">Core Credentials</CardTitle>
+                            <CardDescription>Your verified organizational and contact details.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60 ml-1">First Name</Label>
+                                    <Input
+                                        value={formData.firstName}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                                        disabled={!isEditing}
+                                        className="h-12 rounded-2xl bg-secondary/5 border-border/40 focus:ring-primary/20 transition-all text-base"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60 ml-1">Last Name</Label>
+                                    <Input
+                                        value={formData.lastName}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                                        disabled={!isEditing}
+                                        className="h-12 rounded-2xl bg-secondary/5 border-border/40 focus:ring-primary/20 transition-all text-base"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60 ml-1">Email Address</Label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40" />
+                                        <Input
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                            disabled={!isEditing}
+                                            className="h-12 rounded-2xl pl-12 bg-secondary/5 border-border/40 focus:ring-primary/20 transition-all text-base"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60 ml-1">Phone Connectivity</Label>
+                                    <div className="relative">
+                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40" />
+                                        <Input
+                                            type="tel"
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                            disabled={!isEditing}
+                                            className="h-12 rounded-2xl pl-12 bg-secondary/5 border-border/40 focus:ring-primary/20 transition-all text-base"
+                                            placeholder="+234 (0) 000 0000"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {isEditing && (
+                                <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-border/10">
+                                    <Button variant="ghost" className="rounded-xl px-6" onClick={() => setIsEditing(false)}>
+                                        Discard
+                                    </Button>
+                                    <Button className="rounded-xl px-10 h-11 bg-primary text-primary-foreground shadow-lg shadow-primary/20" onClick={handleSave} disabled={isSaving}>
+                                        {isSaving ? (
+                                            <>
+                                                <Loader2 className="size-4 mr-2 animate-spin" />
+                                                Synchronizing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save className="size-4 mr-2" />
+                                                Update Profile
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Performance Summary Details */}
+                    <Card className="border-border/30 overflow-hidden">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-serif">Attendance Metrics</CardTitle>
+                            <CardDescription>Visual summary of your organizational performance this cycle.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pb-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <MetricWidget label="Attendance Score" value="98.2%" sub="Global average: 92%" positive />
+                                <MetricWidget label="On-time Frequency" value="100%" sub="Perfect streak: 12 days" positive />
+                                <MetricWidget label="Remote Utilization" value="34%" sub="8 days total" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Right Column: Dynamic Settings & Insights */}
+                <div className="space-y-8">
+                    {/* Trust & Safety Status */}
+                    <Card className="border-border/40 bg-primary/5">
+                        <CardContent className="p-6 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70">Security Status</p>
+                                <Badge className="bg-green-100 text-green-700 pointer-events-none">Optimized</Badge>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-primary/10 rounded-2xl">
+                                    <Shield className="size-6 text-primary" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-sm">Biometric Shield Active</p>
+                                    <p className="text-xs text-muted-foreground font-light">Face ID verified 2h ago</p>
+                                </div>
+                            </div>
+                            <Button variant="outline" className="w-full rounded-xl bg-transparent border-primary/20 text-primary h-11 hover:bg-primary/5">
+                                Run Audit
                             </Button>
-                            <Button className="rounded-xl" onClick={handleSave} disabled={isSaving}>
-                                {isSaving ? (
-                                    <>
-                                        <Loader2 className="size-4 mr-2 animate-spin" />
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="size-4 mr-2" />
-                                        Save Changes
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                        </CardContent>
+                    </Card>
 
-            {/* Quick Settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="border-border/30 hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                                <Bell className="size-6 text-blue-600" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold mb-1">Notifications</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Configure how you receive alerts and updates
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                    {/* Quick Preference Grid */}
+                    <div className="grid grid-cols-1 gap-4">
+                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Organizational Prefs</h3>
+                        <QuickLink
+                            icon={Bell}
+                            title="Notifications"
+                            desc="Managed alerts & signals"
+                            color="blue"
+                        />
+                        <QuickLink
+                            icon={Clock}
+                            title="Schedule"
+                            desc="Working hours & flexible modes"
+                            color="purple"
+                        />
+                        <QuickLink
+                            icon={Scan}
+                            title="Identity Prep"
+                            desc="Biometric data management"
+                            color="orange"
+                        />
+                        <QuickLink
+                            icon={Key}
+                            title="Authentication"
+                            desc="Password & 2FA controls"
+                            color="green"
+                        />
+                    </div>
 
-                <Card className="border-border/30 hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                                <Scan className="size-6 text-orange-600" />
+                    {/* Recent Feed */}
+                    <Card className="border-border/30">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-sm font-semibold">Legacy Stream</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="px-6 space-y-6 pb-6">
+                                <FeedItem
+                                    title="Checked In"
+                                    time="Today, 8:42 AM"
+                                    status="Verified"
+                                />
+                                <FeedItem
+                                    title="Profile Updated"
+                                    time="Yesterday, 2:15 PM"
+                                    status="System"
+                                />
+                                <FeedItem
+                                    title="Leave Approved"
+                                    time="Oct 12, 2024"
+                                    status="HR Admin"
+                                />
                             </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold mb-1">Face ID Enrollment</h3>
-                                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                    <span className="size-2 rounded-full bg-green-500" />
-                                    Active • Last updated 2 weeks ago
-                                </p>
-                            </div>
-                            <Button variant="ghost" size="sm" className="rounded-lg text-xs">Update</Button>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-border/30 hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                                <Key className="size-6 text-green-600" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold mb-1">Security</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Password, 2FA, and login sessions
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-border/30 hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                                <Clock className="size-6 text-purple-600" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold mb-1">Work Schedule</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Set your working hours and preferences
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-border/30 hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                                <Shield className="size-6 text-orange-600" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold mb-1">Privacy</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Control your data and visibility settings
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
+        </div>
+    )
+}
 
-            {/* Attendance Summary */}
-            <Card className="border-border/30">
-                <CardHeader>
-                    <CardTitle className="text-xl font-serif">Attendance Overview</CardTitle>
-                    <CardDescription>Your attendance statistics this month</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="text-center p-4 rounded-xl bg-green-50/50 border border-green-100">
-                            <p className="text-3xl font-serif text-green-700">18</p>
-                            <p className="text-xs font-bold uppercase tracking-widest text-green-600/70 mt-1">Present</p>
-                        </div>
-                        <div className="text-center p-4 rounded-xl bg-orange-50/50 border border-orange-100">
-                            <p className="text-3xl font-serif text-orange-700">2</p>
-                            <p className="text-xs font-bold uppercase tracking-widest text-orange-600/70 mt-1">Late</p>
-                        </div>
-                        <div className="text-center p-4 rounded-xl bg-blue-50/50 border border-blue-100">
-                            <p className="text-3xl font-serif text-blue-700">1</p>
-                            <p className="text-xs font-bold uppercase tracking-widest text-blue-600/70 mt-1">Leave</p>
-                        </div>
-                        <div className="text-center p-4 rounded-xl bg-purple-50/50 border border-purple-100">
-                            <p className="text-3xl font-serif text-purple-700">94%</p>
-                            <p className="text-xs font-bold uppercase tracking-widest text-purple-600/70 mt-1">Score</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+function MetricWidget({ label, value, sub, positive }: { label: string, value: string, subText?: string, positive?: boolean }) {
+    return (
+        <div className="p-6 rounded-2xl bg-secondary/5 border border-border/20 space-y-2">
+            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">{label}</p>
+            <p className="text-3xl font-serif tracking-tight">{value}</p>
+            <p className={`text-xs ${positive ? 'text-green-600' : 'text-muted-foreground'} font-light italic`}>{sub}</p>
+        </div>
+    )
+}
+
+function QuickLink({ icon: Icon, title, desc, color }: { icon: any, title: string, desc: string, color: string }) {
+    const colors: Record<string, string> = {
+        blue: 'bg-blue-50 text-blue-600 border-blue-100',
+        purple: 'bg-purple-50 text-purple-600 border-purple-100',
+        orange: 'bg-orange-50 text-orange-600 border-orange-100',
+        green: 'bg-green-50 text-green-600 border-green-100',
+    }
+
+    return (
+        <label className="flex items-center gap-4 p-4 rounded-2xl bg-background border border-border/30 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all cursor-pointer group">
+            <div className={`p-3 rounded-xl border transition-colors ${colors[color]}`}>
+                <Icon className="size-5" />
+            </div>
+            <div className="flex-1">
+                <p className="text-sm font-semibold group-hover:text-primary transition-colors">{title}</p>
+                <p className="text-xs text-muted-foreground font-light">{desc}</p>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground/30 group-hover:text-primary/50 group-hover:translate-x-0.5 transition-all" />
+        </label>
+    )
+}
+
+function FeedItem({ title, time, status }: { title: string, time: string, status: string }) {
+    return (
+        <div className="flex gap-4 group">
+            <div className="relative flex flex-col items-center shrink-0">
+                <div className="size-2.5 rounded-full bg-primary/40 ring-4 ring-primary/5 group-last:mb-0" />
+                <div className="w-px h-full bg-border/40 group-last:hidden" />
+            </div>
+            <div className="pb-6 group-last:pb-0">
+                <p className="text-sm font-medium leading-none mb-1">{title}</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-light">
+                    <span>{time}</span>
+                    <span>•</span>
+                    <span className="italic">{status}</span>
+                </div>
+            </div>
         </div>
     )
 }

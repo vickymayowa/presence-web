@@ -58,6 +58,21 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
+import { format } from "date-fns"
+
+const roleColors: Record<string, string> = {
+    ceo: "bg-purple-100 text-purple-700 border-purple-200",
+    hr: "bg-blue-100 text-blue-700 border-blue-200",
+    manager: "bg-orange-100 text-orange-700 border-orange-200",
+    staff: "bg-green-100 text-green-700 border-green-200",
+}
+
+const roleLabels: Record<string, string> = {
+    ceo: "CEO",
+    hr: "HR Admin",
+    manager: "Manager",
+    staff: "Staff",
+}
 
 
 
@@ -340,9 +355,9 @@ export default function EmployeesPage() {
                                     />
                                 </TableHead>
                                 <TableHead className="w-[300px] text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Employee</TableHead>
-                                <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Department</TableHead>
+                                <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Position & Team</TableHead>
                                 <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Role</TableHead>
-                                <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Start Date</TableHead>
+                                <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Joined Date</TableHead>
                                 <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Status</TableHead>
                                 <TableHead className="text-right"></TableHead>
                             </TableRow>
@@ -351,22 +366,30 @@ export default function EmployeesPage() {
                             {isUsersLoading ? (
                                 Array(5).fill(0).map((_, i) => (
                                     <TableRow key={i} className="animate-pulse">
-                                        <TableCell colSpan={6} className="h-16 bg-secondary/10" />
+                                        <TableCell colSpan={7} className="h-16 bg-secondary/10" />
                                     </TableRow>
                                 ))
-                            ) : filteredEmployees.length === 0 ? (
+                            ) : paginatedEmployees.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-48 text-center text-muted-foreground font-light italic">
-                                        No employees found.
+                                    <TableCell colSpan={7} className="h-48 text-center text-muted-foreground font-light italic">
+                                        No employees found matching your filters.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredEmployees.map((employee) => (
+                                paginatedEmployees.map((employee) => (
                                     <TableRow key={employee.id} className="group border-border/10 hover:bg-secondary/20 transition-colors">
                                         <TableCell>
+                                            <Checkbox
+                                                checked={selectedEmployees.has(employee.id)}
+                                                onCheckedChange={(checked) => handleSelectEmployee(employee.id, !!checked)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <Avatar className="h-9 w-9">
-                                                    <AvatarFallback className="text-xs">{employee.firstName[0]}{employee.lastName[0]}</AvatarFallback>
+                                                <Avatar className="h-9 w-9 ring-1 ring-border/50">
+                                                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                                        {employee.firstName[0]}{employee.lastName[0]}
+                                                    </AvatarFallback>
                                                 </Avatar>
                                                 <div className="space-y-0.5">
                                                     <p className="text-sm font-medium">{employee.firstName} {employee.lastName}</p>
@@ -375,20 +398,23 @@ export default function EmployeesPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2 text-sm">
-                                                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                                {employee.department}
+                                            <div className="space-y-0.5">
+                                                <p className="text-sm font-medium">{employee.position || "—"}</p>
+                                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-light">
+                                                    <Building2 className="h-3 w-3" />
+                                                    {employee.department}
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className="capitalize rounded-lg px-2 py-0 h-6 text-[10px] font-bold tracking-wider border-primary/20 bg-primary/5 text-primary">
-                                                {employee.role}
+                                            <Badge variant="outline" className={`capitalize rounded-lg px-2 py-0 h-6 text-[10px] font-bold tracking-wider ${roleColors[employee.role] || "border-border"}`}>
+                                                {roleLabels[employee.role] || employee.role}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground font-light">
                                                 <Calendar className="h-3.5 w-3.5" />
-                                                Nov 12, 2024
+                                                {format(new Date(employee.joinedAt), "MMM dd, yyyy")}
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -398,9 +424,19 @@ export default function EmployeesPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" className="rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="rounded-xl">
+                                                    <DropdownMenuItem>View Details</DropdownMenuItem>
+                                                    <DropdownMenuItem>Edit Profile</DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem className="text-destructive focus:text-destructive">Deactivate</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))
