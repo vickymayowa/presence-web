@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useSessionCheck } from "@/hooks/use-session-check"
-import { SessionLogoutModal } from "@/components/session-logout-modal"
+// import { SessionLogoutModal } from "@/components/session-logout-modal"
 import { useAuth } from "@/lib/auth-context"
 
 export function GlobalSessionCheck() {
@@ -18,10 +18,10 @@ export function GlobalSessionCheck() {
     })
 
     return (
-        <SessionLogoutModal
-            open={showLogoutModal}
-            onOpenChange={setShowLogoutModal}
-            reason={logoutReason}
-        />
+        // <SessionLogoutModal
+        //     open={showLogoutModal}
+        //     onOpenChange={setShowLogoutModal}
+        //     reason={logoutReason}
+        // />
     )
 }
