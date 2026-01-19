@@ -7,6 +7,7 @@ import { ProgressBar } from "@/components/progress-bar"
 import { Toaster } from "sonner"
 import "./globals.css"
 import { Providers } from "@/components/providers"
+import { GlobalSessionCheck } from "@/components/global-session-check"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -88,7 +89,6 @@ export const metadata: Metadata = {
   },
 }
 
-import { GlobalSessionCheck } from "@/components/global-session-check"
 
 export default function RootLayout({
   children,
