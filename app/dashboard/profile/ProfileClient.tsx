@@ -339,7 +339,7 @@ export default function ProfilePage() {
     )
 }
 
-function MetricWidget({ label, value, sub, positive }: { label: string, value: string, subText?: string, positive?: boolean }) {
+function MetricWidget({ label, value, sub, positive }: { label: string, value: string, sub?: string, positive?: boolean }) {
     return (
         <div className="p-6 rounded-2xl bg-secondary/5 border border-border/20 space-y-2">
             <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">{label}</p>
