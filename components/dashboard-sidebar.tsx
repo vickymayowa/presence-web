@@ -84,6 +84,7 @@ const navigationConfig: Record<UserRole, { general: NavItem[]; admin?: NavItem[]
         admin: [
             { icon: Building2, label: "Departments", href: "/dashboard/departments" },
             { icon: BarChart3, label: "Reports", href: "/dashboard/reports" },
+            { icon: Clock, label: "Shift Sections", href: "/dashboard/settings/checkin-windows" },
             { icon: ShieldCheck, label: "Compliance", href: "/dashboard/compliance" },
             { icon: Settings, label: "Settings", href: "/dashboard/settings" },
         ],
@@ -98,6 +99,7 @@ const navigationConfig: Record<UserRole, { general: NavItem[]; admin?: NavItem[]
         admin: [
             { icon: Briefcase, label: "Executive View", href: "/dashboard/executive" },
             { icon: FileText, label: "Reports", href: "/dashboard/reports" },
+            { icon: Clock, label: "Check-in", href: "/dashboard/settings/checkin-windows" },
             { icon: Bell, label: "Notifications", href: "/dashboard/notifications" },
             { icon: Settings, label: "Settings", href: "/dashboard/settings" },
         ],
