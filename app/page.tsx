@@ -58,7 +58,7 @@ export default function Home() {
             <ThemeToggle />
             <Link href="/auth/login">
               <Button variant="ghost" className="text-sm font-semibold hover:bg-transparent">
-                Login..
+                Login
               </Button>
             </Link>
             <Link href="/auth/register">
