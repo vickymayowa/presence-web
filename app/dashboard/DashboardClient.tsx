@@ -238,35 +238,7 @@ function CEODashboard({ stats, onBroadcast }: { stats: any; onBroadcast: () => v
                         </CardContent>
                     </Card>
 
-                    <Card className="border-border/40">
-                        <CardHeader>
-                            <CardTitle className="font-serif text-xl">Top Departments</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            {(stats?.departmentStats || []).length > 0 ? (
-                                stats.departmentStats.map((dept: any) => (
-                                    <div key={dept.name} className="flex items-center justify-between">
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-medium leading-none">{dept.name}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {dept.attendanceRate}% attendance rate
-                                            </p>
-                                        </div>
-                                        <Badge
-                                            variant="secondary"
-                                            className={`rounded-lg ${dept.attendanceRate >= 90 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}
-                                        >
-                                            {dept.attendanceRate >= 90 ? 'Optimal' : 'Needs Review'}
-                                        </Badge>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-center py-10 text-muted-foreground italic text-sm">
-                                    No department data available
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                    <ActivityLog scope="company" limit={8} />
                 </div>
             </div>
         </div>
@@ -301,34 +273,7 @@ function HRDashboard({ stats, users, onBroadcast }: { stats: any; users: any[]; 
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 border-border/40">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="font-serif text-2xl">Recent Activity</CardTitle>
-                        <Button variant="outline" size="sm" className="rounded-xl">View All</Button>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="divide-y divide-border/30">
-                            {users.slice(0, 5).map((user) => (
-                                <div key={user.id} className="flex items-center gap-4 p-4 hover:bg-secondary/20 transition-colors">
-                                    <Avatar className="h-10 w-10">
-                                        <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 space-y-1">
-                                        <p className="text-sm font-medium leading-none">
-                                            {user.firstName} {user.lastName} checked in
-                                        </p>
-                                        <p className="text-xs text-muted-foreground italic">
-                                            Today at 8:{Math.floor(Math.random() * 50).toString().padStart(2, '0')} AM • {user.department}
-                                        </p>
-                                    </div>
-                                    <Badge variant="outline" className="rounded-lg bg-green-50 text-green-700 border-green-200">
-                                        On-time
-                                    </Badge>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                <ActivityLog scope="company" limit={8} className="lg:col-span-2" />
 
                 <div className="space-y-6">
                     <Card className="border-border/40 bg-primary/5">
@@ -513,6 +458,8 @@ function StaffDashboard({
                     </CardContent>
                 </Card>
             </div>
+
+            <ActivityLog scope="user" limit={10} />
         </div>
     )
 }
