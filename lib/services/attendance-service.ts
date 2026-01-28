@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notificationService } from "./notification-service";
+import { activityService } from "./activity-service";
 
 export class AttendanceService {
     /**
@@ -33,6 +34,14 @@ export class AttendanceService {
 
         const { type, workMode, verificationMethod, notes, location } = data;
 
+        // Get user for companyId
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { companyId: true, firstName: true, lastName: true }
+        });
+
+        if (!user) throw new Error("User not found");
+
         if (type === 'in') {
             const record = await prisma.attendanceRecord.upsert({
                 where: {
@@ -65,6 +74,15 @@ export class AttendanceService {
                 actionUrl: '/dashboard/attendance'
             }).catch(e => console.error("Notification failed", e));
 
+            // Log Activity
+            await activityService.logActivity({
+                userId,
+                companyId: user.companyId,
+                action: "CHECK_IN",
+                description: `${user.firstName} ${user.lastName} checked in via ${workMode}`,
+                metadata: { workMode, verificationMethod }
+            });
+
             return record;
         } else {
             const record = await prisma.attendanceRecord.update({
@@ -85,6 +103,15 @@ export class AttendanceService {
                 type: 'attendance',
                 actionUrl: '/dashboard/attendance'
             }).catch(e => console.error("Notification failed", e));
+
+            // Log Activity
+            await activityService.logActivity({
+                userId,
+                companyId: user.companyId,
+                action: "CHECK_OUT",
+                description: `${user.firstName} ${user.lastName} checked out`,
+                metadata: { notes }
+            });
 
             return record;
         }

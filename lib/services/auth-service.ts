@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserRole } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
+import { activityService } from "./activity-service";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-me";
 
@@ -120,6 +121,14 @@ export class AuthService {
         // 6. Session Token Generation
         const token = this.generateToken(user, newSessionId);
 
+        // 7. Log Activity
+        await activityService.logActivity({
+            userId: user.id,
+            companyId: user.companyId,
+            action: "REGISTER",
+            description: `New user ${user.firstName} ${user.lastName} registered`
+        });
+
         return {
             user: this.sanitizeUser(user),
             token,
@@ -159,6 +168,14 @@ export class AuthService {
         });
 
         const token = this.generateToken(user, newSessionId);
+
+        // Log Activity
+        await activityService.logActivity({
+            userId: user.id,
+            companyId: user.companyId,
+            action: "LOGIN",
+            description: "User logged into the system"
+        });
 
         return {
             user: this.sanitizeUser(user),

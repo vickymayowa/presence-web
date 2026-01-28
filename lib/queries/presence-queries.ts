@@ -14,6 +14,7 @@ export const queryKeys = {
     leaves: ['leaves'] as const,
     notifications: (userId: string) => ['notifications', userId] as const,
     company: (slug: string) => ['company', slug] as const,
+    activities: (scope: string) => ['activities', scope] as const,
 };
 
 // --- QUERIES ---
@@ -97,6 +98,22 @@ export function useCompanyQuery(slug: string) {
         enabled: !!slug,
     });
 }
+
+export function useActivitiesQuery(scope: 'company' | 'user' = 'company', limit: number = 10) {
+    return useQuery({
+        queryKey: queryKeys.activities(scope),
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/activities?scope=${scope}&limit=${limit}`, {
+                headers: getAuthHeaders()
+            });
+            if (!res.ok) throw new Error('Failed to fetch activities');
+            const result = await res.json();
+            return result.data as any[];
+        },
+        refetchInterval: 30000, // Refresh every 30 seconds
+    });
+}
+
 
 // --- MUTATIONS ---
 

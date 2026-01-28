@@ -81,6 +81,7 @@ model Company {
   users          User[]
   departments    Department[]
   checkInWindows CheckInWindow[]
+  activityLogs   ActivityLog[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
@@ -113,6 +114,7 @@ model User {
   workSchedules     WorkSchedule[]
   notifications     Notification[]
   pushSubscriptions PushSubscription[]
+  activityLogs      ActivityLog[]
 
   approvedLeaves   LeaveRequest[]    @relation("LeaveApprover")
   approvedOvertime OvertimeRequest[] @relation("OvertimeApprover")
@@ -259,4 +261,22 @@ model CheckInWindow {
   updatedAt DateTime @updatedAt
 
   @@index([companyId, isActive])
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  
+  action      String   // e.g., "LOGIN", "CHECK_IN", "CHECK_OUT", "PAGE_VIEW"
+  description String?  // e.g., "User logged into the system"
+  metadata    Json?    // e.g., { "page": "/dashboard", "ip": "..." }
+  
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([createdAt])
 }

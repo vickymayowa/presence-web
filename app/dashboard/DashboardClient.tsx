@@ -36,6 +36,7 @@ import {
 } from 'recharts'
 import { AttendanceModal } from "@/components/attendance-modal"
 import { BroadcastModal } from "@/components/broadcast-modal"
+import { ActivityLog } from "@/components/activity-log"
 import { useAuth } from "@/lib/auth-context"
 import {
     useAttendanceQuery,
