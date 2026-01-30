@@ -61,7 +61,7 @@ export class ActivityService {
                 take: limit
             });
 
-            console.log("[ActivityLog] Found activities:", activities.length);
+            console.log(activities);
             return activities;
         } catch (error) {
             console.error("[ActivityLog] Error fetching activities:", error);
@@ -89,7 +89,7 @@ export class ActivityService {
                 take: limit
             });
 
-            console.log("[ActivityLog] Found user activities:", activities.length);
+            console.log(activities);
             return activities;
         } catch (error) {
             console.error("[ActivityLog] Error fetching user activities:", error);
