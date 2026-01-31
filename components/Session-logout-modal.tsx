@@ -17,7 +17,7 @@ interface SessionLogoutModalProps {
   reason?: string
 }
 
-export function SessionLogoutModal({ open, onOpenChange, reason }: SessionLogoutModalProps) {
+export default function SessionLogoutModal({ open, onOpenChange, reason }: SessionLogoutModalProps) {
   const router = useRouter()
 
   const handleConfirm = () => {
