@@ -22,14 +22,18 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useCreateBranchMutation, useUpdateBranchMutation } from "@/lib/queries/presence-queries"
+import { useCreateBranchMutation, useUpdateBranchMutation, useUsersQuery } from "@/lib/queries/presence-queries"
 import { toast } from "sonner"
 import { ControllerRenderProps } from "react-hook-form"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Search } from "lucide-react"
 
 const branchSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     location: z.string().optional(),
     address: z.string().optional(),
+    userIds: z.array(z.string()).optional(),
 })
 
 type BranchFormValues = z.infer<typeof branchSchema>
@@ -50,8 +54,19 @@ export function BranchModal({ isOpen, onClose, initialData }: BranchModalProps) 
             name: "",
             location: "",
             address: "",
+            userIds: [],
         },
     })
+
+    const { data: users = [] } = useUsersQuery()
+    const [searchTerm, setSearchTerm] = React.useState("")
+
+    const filteredUsers = React.useMemo(() => {
+        return users.filter(user =>
+            `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    }, [users, searchTerm])
 
     React.useEffect(() => {
         if (initialData) {
@@ -65,6 +80,7 @@ export function BranchModal({ isOpen, onClose, initialData }: BranchModalProps) 
                 name: "",
                 location: "",
                 address: "",
+                userIds: [],
             })
         }
     }, [initialData, form, isOpen])
@@ -151,6 +167,52 @@ export function BranchModal({ isOpen, onClose, initialData }: BranchModalProps) 
                                 </FormItem>
                             )}
                         />
+
+                        {!initialData && (
+                            <div className="space-y-3 pt-2">
+                                <FormLabel className="text-sm font-medium">Assign Initial Staff (Optional)</FormLabel>
+                                <div className="relative mb-2">
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search employees..."
+                                        className="pl-9 h-9 rounded-xl border-border/30 bg-secondary/5"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                <ScrollArea className="h-48 rounded-xl border border-border/40 p-2">
+                                    <div className="space-y-1">
+                                        {filteredUsers.length === 0 ? (
+                                            <p className="text-xs text-center py-8 text-muted-foreground italic">No employees found</p>
+                                        ) : (
+                                            filteredUsers.map((user) => (
+                                                <div key={user.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+                                                    <Checkbox
+                                                        id={`user-${user.id}`}
+                                                        checked={form.watch("userIds")?.includes(user.id)}
+                                                        onCheckedChange={(checked) => {
+                                                            const currentIds = form.getValues("userIds") || []
+                                                            if (checked) {
+                                                                form.setValue("userIds", [...currentIds, user.id])
+                                                            } else {
+                                                                form.setValue("userIds", currentIds.filter(id => id !== user.id))
+                                                            }
+                                                        }}
+                                                    />
+                                                    <label
+                                                        htmlFor={`user-${user.id}`}
+                                                        className="text-sm font-light flex-1 cursor-pointer"
+                                                    >
+                                                        {user.firstName} {user.lastName}
+                                                        <span className="text-[10px] text-muted-foreground block leading-none">{user.position} • {user.department}</span>
+                                                    </label>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+                        )}
 
                         <DialogFooter className="pt-4">
                             <Button
