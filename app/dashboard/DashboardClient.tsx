@@ -250,22 +250,22 @@ function HRDashboard({ stats, users, onBroadcast }: { stats: any; users: any[]; 
         <div className="grid gap-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatsCard
-                    title="Morning Shift"
-                    value="42"
-                    description="Checked in before 9:00 AM"
-                    icon={Clock}
-                    trend={+5}
+                    title="Present Today"
+                    value={stats?.activeEmployees || 0}
+                    description={`Total employees checked in`}
+                    icon={UserCheck}
+                    trend={0}
                 />
                 <StatsCard
                     title="Late Arrivals"
-                    value="4"
+                    value={stats?.lateArrivals?.length || 0}
                     description="Requires follow-up"
                     icon={AlertCircle}
-                    trend={-2}
+                    trend={stats?.lateArrivals?.length > 0 ? -stats.lateArrivals.length : 0}
                 />
                 <StatsCard
                     title="Leave Requests"
-                    value="12"
+                    value={stats?.pendingRequests || 0}
                     description="Pending approvals"
                     icon={Calendar}
                     className="bg-primary/5"

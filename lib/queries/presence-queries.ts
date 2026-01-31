@@ -349,3 +349,22 @@ export function useBroadcastNotificationMutation() {
         },
     });
 }
+
+export function useCreateEventMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (event: any) => {
+            const res = await fetch(`${API_BASE}/schedule`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(event),
+            });
+            if (!res.ok) throw new Error('Failed to create event');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['schedule'] });
+        },
+    });
+}
