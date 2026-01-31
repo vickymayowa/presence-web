@@ -35,6 +35,7 @@ const getActivityIcon = (action: string) => {
         case 'PAGE_VIEW': return Eye
         case 'CREATE_DEPARTMENT': return Building2
         case 'REQUEST_LEAVE': return Calendar
+        case 'CREATE_EVENT': return Calendar
         case 'LEAVE_APPROVED': return CheckCircle2
         case 'LEAVE_REJECTED': return XCircle
         case 'BROADCAST_ANNOUNCEMENT': return Megaphone
@@ -59,6 +60,7 @@ const getActivityColor = (action: string) => {
         case 'PAGE_VIEW':
         case 'CREATE_DEPARTMENT':
         case 'BROADCAST_ANNOUNCEMENT':
+        case 'CREATE_EVENT':
             return 'bg-purple-100 text-purple-700 border-purple-200'
         default:
             return 'bg-gray-100 text-gray-700 border-gray-200'

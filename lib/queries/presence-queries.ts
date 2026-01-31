@@ -15,6 +15,7 @@ export const queryKeys = {
     notifications: (userId: string) => ['notifications', userId] as const,
     company: (slug: string) => ['company', slug] as const,
     activities: (scope: string) => ['activities', scope] as const,
+    schedule: (start?: string, end?: string) => ['schedule', start, end] as const,
 };
 
 // --- QUERIES ---
@@ -24,6 +25,28 @@ const getAuthHeaders = () => {
         'Content-Type': 'application/json',
     };
 };
+
+export function useScheduleQuery(start?: Date, end?: Date) {
+    const startStr = start?.toISOString();
+    const endStr = end?.toISOString();
+
+    return useQuery({
+        queryKey: queryKeys.schedule(startStr, endStr),
+        queryFn: async () => {
+            const params = new URLSearchParams();
+            if (startStr) params.append('start', startStr);
+            if (endStr) params.append('end', endStr);
+
+            const res = await fetch(`${API_BASE}/schedule?${params.toString()}`, {
+                headers: getAuthHeaders()
+            });
+            if (!res.ok) throw new Error('Failed to fetch schedule');
+            const result = await res.json();
+            return result.data as any[]; // Type this properly if possible
+        },
+    });
+}
+
 
 export function useUsersQuery() {
     return useQuery({
