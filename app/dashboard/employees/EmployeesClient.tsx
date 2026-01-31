@@ -26,7 +26,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
-import { useUsersQuery, useCreateEmployeeMutation, useDepartmentsQuery } from "@/lib/queries/presence-queries"
+import { useUsersQuery, useCreateEmployeeMutation, useDepartmentsQuery, useBranchesQuery } from "@/lib/queries/presence-queries"
 import {
     Table,
     TableBody,
@@ -80,6 +80,7 @@ export default function EmployeesPage() {
     const { user: currentUser } = useAuth()
     const { data: allUsers = [], isLoading: isUsersLoading } = useUsersQuery()
     const { data: departmentsData = [] } = useDepartmentsQuery()
+    const { data: branchesData = [] } = useBranchesQuery()
     const createEmployeeMutation = useCreateEmployeeMutation()
     const { toast } = useToast()
 
@@ -92,7 +93,8 @@ export default function EmployeesPage() {
         password: "",
         role: "staff",
         department: "",
-        position: ""
+        position: "",
+        branchId: ""
     })
 
     // Pagination state
@@ -103,6 +105,7 @@ export default function EmployeesPage() {
     const [roleFilter, setRoleFilter] = React.useState<string>("all")
     const [departmentFilter, setDepartmentFilter] = React.useState<string>("all")
     const [statusFilter, setStatusFilter] = React.useState<string>("all")
+    const [branchFilter, setBranchFilter] = React.useState<string>("all")
 
     // Bulk selection state
     const [selectedEmployees, setSelectedEmployees] = React.useState<Set<string>>(new Set())
@@ -123,7 +126,8 @@ export default function EmployeesPage() {
                 password: "",
                 role: "staff",
                 department: "",
-                position: ""
+                position: "",
+                branchId: ""
             })
         } catch (error: any) {
             toast({
@@ -201,9 +205,12 @@ export default function EmployeesPage() {
             // Status filter (assuming all active for now)
             const statusMatch = statusFilter === "all" || statusFilter === "active"
 
-            return searchMatch && roleMatch && departmentMatch && statusMatch
+            // Branch filter
+            const branchMatch = branchFilter === "all" || u.branchId === branchFilter
+
+            return searchMatch && roleMatch && departmentMatch && statusMatch && branchMatch
         })
-    }, [allUsers, searchQuery, roleFilter, departmentFilter, statusFilter])
+    }, [allUsers, searchQuery, roleFilter, departmentFilter, statusFilter, branchFilter])
 
     // Pagination logic
     const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage)
@@ -214,7 +221,7 @@ export default function EmployeesPage() {
     // Reset to page 1 when filters change
     React.useEffect(() => {
         setCurrentPage(1)
-    }, [searchQuery, roleFilter, departmentFilter, statusFilter])
+    }, [searchQuery, roleFilter, departmentFilter, statusFilter, branchFilter])
 
     if (!currentUser) return null
 
@@ -320,8 +327,23 @@ export default function EmployeesPage() {
                                 </SelectContent>
                             </Select>
 
+                            {/* Branch Filter */}
+                            <Select value={branchFilter} onValueChange={setBranchFilter}>
+                                <SelectTrigger className="rounded-xl h-10 w-[150px]">
+                                    <SelectValue placeholder="Branch" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Branches</SelectItem>
+                                    {branchesData.map((branch: any) => (
+                                        <SelectItem key={branch.id} value={branch.id}>
+                                            {branch.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
                             {/* Clear Filters */}
-                            {(roleFilter !== "all" || departmentFilter !== "all" || statusFilter !== "all") && (
+                            {(roleFilter !== "all" || departmentFilter !== "all" || statusFilter !== "all" || branchFilter !== "all") && (
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -330,6 +352,7 @@ export default function EmployeesPage() {
                                         setRoleFilter("all")
                                         setDepartmentFilter("all")
                                         setStatusFilter("all")
+                                        setBranchFilter("all")
                                     }}
                                 >
                                     <X className="h-4 w-4 mr-1" />
@@ -356,6 +379,7 @@ export default function EmployeesPage() {
                                 </TableHead>
                                 <TableHead className="w-[300px] text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Employee</TableHead>
                                 <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Position & Team</TableHead>
+                                <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Branch</TableHead>
                                 <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Role</TableHead>
                                 <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Joined Date</TableHead>
                                 <TableHead className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Status</TableHead>
@@ -405,6 +429,9 @@ export default function EmployeesPage() {
                                                     {employee.department}
                                                 </div>
                                             </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <p className="text-sm font-light text-muted-foreground">{employee.branch?.name || "—"}</p>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className={`capitalize rounded-lg px-2 py-0 h-6 text-[10px] font-bold tracking-wider ${roleColors[employee.role] || "border-border"}`}>
@@ -544,15 +571,35 @@ export default function EmployeesPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="position">Position (Optional)</Label>
-                            <Input
-                                id="position"
-                                value={formData.position}
-                                onChange={(e) => handleInputChange("position", e.target.value)}
-                                placeholder="Software Engineer"
-                                className="rounded-xl"
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="position">Position (Optional)</Label>
+                                <Input
+                                    id="position"
+                                    value={formData.position}
+                                    onChange={(e) => handleInputChange("position", e.target.value)}
+                                    placeholder="Software Engineer"
+                                    className="rounded-xl"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="branch">Branch (Optional)</Label>
+                                <Select
+                                    value={formData.branchId}
+                                    onValueChange={(value) => handleInputChange("branchId", value)}
+                                >
+                                    <SelectTrigger className="rounded-xl">
+                                        <SelectValue placeholder="Select branch" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {branchesData.map((branch: any) => (
+                                            <SelectItem key={branch.id} value={branch.id}>
+                                                {branch.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 
