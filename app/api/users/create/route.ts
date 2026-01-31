@@ -4,6 +4,7 @@ import { ApiResponse } from "@/lib/utils/api-response";
 import bcrypt from "bcryptjs";
 import { getSession } from "@/lib/utils/auth-utils";
 import { UserRole } from "@/lib/types";
+import { activityService } from "@/lib/services/activity-service";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -71,6 +72,19 @@ export async function POST(req: NextRequest) {
 
         // Sanitize user (remove password)
         const { password: _, ...sanitizedUser } = newUser;
+
+        // Log activity
+        await activityService.logActivity({
+            userId: currentUser.id,
+            companyId: currentUser.companyId,
+            action: "CREATE_USER",
+            description: `Added new employee: ${firstName} ${lastName}`,
+            metadata: {
+                newUserId: newUser.id,
+                role,
+                department
+            }
+        });
 
         return ApiResponse.success(
             sanitizedUser,

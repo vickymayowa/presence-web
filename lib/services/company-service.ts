@@ -6,113 +6,122 @@ export class CompanyService {
      * This is used by CEOs and HR to get an overview of the workforce.
      */
     async getCompanyStats(companyId: string) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
 
-        const [totalEmployees, presentToday, onLeave, pendingRequests, departments] = await Promise.all([
-            // Total employees in the company
+        // 1. Fetch main stats in parallel
+        const [totalEmployees, presentToday, onLeave, pendingRequests, departmentCount, remote] = await Promise.all([
             prisma.user.count({ where: { companyId } }),
-
-            // Users who checked in today
             prisma.attendanceRecord.count({
                 where: {
                     user: { companyId },
-                    date: today,
-                    status: { in: ['present', 'late'] }
+                    date: { gte: todayStart, lte: todayEnd },
+                    status: { in: ['present', 'late', 'half_day'] }
                 }
             }),
-
-            // Users on leave today
             prisma.attendanceRecord.count({
                 where: {
                     user: { companyId },
-                    date: today,
+                    date: { gte: todayStart, lte: todayEnd },
                     status: 'leave'
                 }
             }),
-
-            // Pending leave requests for the company
             prisma.leaveRequest.count({
+                where: { user: { companyId }, status: 'pending' }
+            }),
+            prisma.department.count({ where: { companyId } }),
+            prisma.attendanceRecord.count({
                 where: {
                     user: { companyId },
-                    status: 'pending'
+                    date: { gte: todayStart, lte: todayEnd },
+                    workMode: 'remote'
                 }
-            }),
-
-            // Total departments
-            prisma.department.count({
-                where: { companyId }
             })
         ]);
 
-        // Calculate remote workers (checked in with remote mode)
-        const remote = await prisma.attendanceRecord.count({
+        // 2. Trend Data (Last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+
+        const trendRecords = await prisma.attendanceRecord.findMany({
             where: {
                 user: { companyId },
-                date: today,
-                workMode: 'remote'
+                date: { gte: sevenDaysAgo },
+                status: { in: ['present', 'late', 'half_day'] }
+            },
+            select: { date: true }
+        });
+
+        const trendMap = new Map<string, number>();
+        // Initialize last 7 days with 0
+        for (let i = 0; i < 7; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - (6 - i));
+            trendMap.set(d.toLocaleDateString('en-US', { weekday: 'short' }), 0);
+        }
+
+        trendRecords.forEach(r => {
+            const dayName = r.date.toLocaleDateString('en-US', { weekday: 'short' });
+            if (trendMap.has(dayName)) {
+                trendMap.set(dayName, trendMap.get(dayName)! + 1);
             }
         });
 
-        // Calculate attendance rate
-        const attendanceRate = totalEmployees > 0
-            ? Math.round((presentToday / totalEmployees) * 100)
-            : 0;
+        const trendData = Array.from(trendMap.entries()).map(([name, attendance]) => ({ name, attendance }));
 
-        // Fetch trend data for the last 7 days
-        const last7Days = Array.from({ length: 7 }, (_, i) => {
-            const d = new Date();
-            d.setDate(d.getDate() - (6 - i));
-            d.setHours(0, 0, 0, 0);
-            return d;
+
+        // 3. Department Stats
+        // Get employee count per department
+        const deptUserCounts = await prisma.user.groupBy({
+            by: ['department'],
+            where: { companyId },
+            _count: { _all: true }
         });
 
-        const trendData = await Promise.all(last7Days.map(async (date) => {
-            const count = await prisma.attendanceRecord.count({
-                where: {
-                    user: { companyId },
-                    date: date,
-                    status: { in: ['present', 'late'] }
-                }
-            });
-            return {
-                name: date.toLocaleDateString('en-US', { weekday: 'short' }),
-                attendance: count
-            };
-        }));
+        // Get attendance count per department (today)
+        const deptAttendanceCounts = await prisma.attendanceRecord.findMany({
+            where: {
+                user: { companyId },
+                date: { gte: todayStart, lte: todayEnd },
+                status: { in: ['present', 'late', 'half_day'] }
+            },
+            include: { user: { select: { department: true } } }
+        });
 
-        // Dynamic performance index calculation (example logic)
-        // Base score is attendance rate, with minor penalties for pending requests
-        const basePerformance = attendanceRate;
-        const penalty = Math.min(pendingRequests * 0.5, 10); // Max 10% penalty for pending work
-        const performanceIndex = Math.max(Math.min(basePerformance + (100 - attendanceRate) * 0.8 - penalty, 100), 0);
+        const deptAttendanceMap = new Map<string, number>();
+        departmentStats: deptAttendanceCounts.forEach(r => {
+            const d = r.user.department;
+            if (d) deptAttendanceMap.set(d, (deptAttendanceMap.get(d) || 0) + 1);
+        });
 
-        // Fetch department-wise attendance rates
+        // Get all department names to ensure we include empty ones
         const allDepts = await prisma.department.findMany({
-            where: { companyId }
+            where: { companyId },
+            select: { name: true }
         });
 
-        const departmentStats = await Promise.all(allDepts.map(async (dept) => {
-            const [deptUserCount, presentInDept] = await Promise.all([
-                prisma.user.count({ where: { department: dept.name, companyId } }),
-                prisma.attendanceRecord.count({
-                    where: {
-                        user: { department: dept.name, companyId },
-                        date: today,
-                        status: { in: ['present', 'late'] }
-                    }
-                })
-            ]);
-
-            const rate = deptUserCount > 0
-                ? Math.round((presentInDept / deptUserCount) * 100)
-                : 0;
-
+        const departmentStats = allDepts.map(dept => {
+            const total = deptUserCounts.find(c => c.department === dept.name)?._count._all || 0;
+            const present = deptAttendanceMap.get(dept.name) || 0;
+            const rate = total > 0 ? Math.round((present / total) * 100) : 0;
             return {
                 name: dept.name,
                 attendanceRate: rate
             };
-        }));
+        });
+
+        // 4. Calculate final derived stats
+        const attendanceRate = totalEmployees > 0
+            ? Math.round((presentToday / totalEmployees) * 100)
+            : 0;
+
+        // Performance Index
+        const basePerformance = attendanceRate;
+        const penalty = Math.min(pendingRequests * 0.5, 10);
+        const performanceIndex = Math.max(Math.min(basePerformance + (100 - attendanceRate) * 0.8 - penalty, 100), 0);
 
         return {
             totalEmployees,
@@ -120,7 +129,7 @@ export class CompanyService {
             onLeave,
             remote,
             pendingRequests,
-            departments,
+            departments: departmentCount,
             attendanceRate,
             performanceIndex: parseFloat(performanceIndex.toFixed(1)),
             trendData,
