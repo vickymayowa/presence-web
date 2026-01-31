@@ -34,20 +34,32 @@ export class BranchService {
         });
     }
 
-    async createBranch(companyId: string, creatorId: string, data: { name: string, location?: string, address?: string }) {
+    async createBranch(companyId: string, creatorId: string, data: { name: string, location?: string, address?: string, userIds?: string[] }) {
+        const { userIds, ...branchData } = data;
+
         const branch = await prisma.branch.create({
             data: {
-                ...data,
+                ...branchData,
                 companyId
             }
         });
+
+        if (userIds && userIds.length > 0) {
+            await prisma.user.updateMany({
+                where: {
+                    id: { in: userIds },
+                    companyId
+                },
+                data: { branchId: branch.id }
+            });
+        }
 
         await activityService.logActivity({
             userId: creatorId,
             companyId,
             action: "CREATE_BRANCH",
-            description: `Created branch: ${data.name}`,
-            metadata: { branchId: branch.id }
+            description: `Created branch: ${data.name}${userIds?.length ? ` and assigned ${userIds.length} users` : ''}`,
+            metadata: { branchId: branch.id, assignedCount: userIds?.length || 0 }
         });
 
         return branch;

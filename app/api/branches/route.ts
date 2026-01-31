@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { branchService } from "@/lib/services/branch-service";
-import { authService } from "@/lib/services/auth-service";
+import { getSession } from "@/lib/utils/auth-utils";
 
 export async function GET(req: NextRequest) {
     try {
-        const session = await authService.validateSession(req);
+        const session = getSession(req);
         if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
@@ -24,13 +24,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const session = await authService.validateSession(req);
+        const session = getSession(req);
         if (!session || (session.role !== 'ceo' && session.role !== 'hr')) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const body = await req.json();
-        const branch = await branchService.createBranch(session.companyId, session.userId, body);
+        const branch = await branchService.createBranch(session.companyId, session.id, body);
 
         return NextResponse.json({ data: branch });
     } catch (error) {
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
     try {
-        const session = await authService.validateSession(req);
+        const session = getSession(req);
         if (!session || (session.role !== 'ceo' && session.role !== 'hr')) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
@@ -50,11 +50,11 @@ export async function PATCH(req: NextRequest) {
 
         if (userId && branchId !== undefined) {
             // Assign user to branch
-            const user = await branchService.assignUserToBranch(userId, branchId, session.companyId, session.userId);
+            const user = await branchService.assignUserToBranch(userId, branchId, session.companyId, session.id);
             return NextResponse.json({ data: user });
         } else if (branchId) {
             // Update branch
-            const branch = await branchService.updateBranch(branchId, session.companyId, session.userId, data);
+            const branch = await branchService.updateBranch(branchId, session.companyId, session.id, data);
             return NextResponse.json({ data: branch });
         }
 
@@ -66,7 +66,7 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
     try {
-        const session = await authService.validateSession(req);
+        const session = getSession(req);
         if (!session || (session.role !== 'ceo' && session.role !== 'hr')) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
@@ -76,7 +76,7 @@ export async function DELETE(req: NextRequest) {
 
         if (!branchId) return NextResponse.json({ error: "Branch ID required" }, { status: 400 });
 
-        await branchService.deleteBranch(branchId, session.companyId, session.userId);
+        await branchService.deleteBranch(branchId, session.companyId, session.id);
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ error: (error as Error).message }, { status: 500 });
