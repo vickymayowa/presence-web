@@ -19,13 +19,13 @@ const navItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
   { icon: Clock, label: "Attendance", href: "/dashboard/attendance" },
   { icon: Calendar, label: "Schedule", href: "/dashboard/schedule" },
-  { icon: MapPin, label: "Work Modes", href: "/dashboard/work-modes" },
+  { icon: MapPin, label: "Branches", href: "/dashboard/branches" },
 ]
 
 const adminItems = [
-  { icon: Users, label: "Team", href: "/dashboard/admin/team" },
-  { icon: ShieldCheck, label: "Compliance", href: "/dashboard/admin/compliance" },
-  { icon: Settings, label: "Settings", href: "/dashboard/admin/settings" },
+  { icon: Users, label: "Team", href: "/dashboard/team" },
+  { icon: ShieldCheck, label: "Compliance", href: "/dashboard/compliance" },
+  { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ]
 
 export function DashboardSidebar() {

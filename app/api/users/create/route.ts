@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { firstName, lastName, email, password, role, department, position } = body;
+        const { firstName, lastName, email, password, role, department, position, branchId } = body;
 
         // Validate required fields
         if (!firstName || !lastName || !email || !password || !role || !department) {
@@ -63,10 +63,12 @@ export async function POST(req: NextRequest) {
                 role,
                 department: department.trim(),
                 position: position?.trim() || getDefaultPosition(role),
-                companyId: currentUser.companyId
+                companyId: currentUser.companyId,
+                branchId: branchId || null
             },
             include: {
-                company: true
+                company: true,
+                branch: true
             }
         });
 

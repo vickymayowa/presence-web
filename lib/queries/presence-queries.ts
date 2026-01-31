@@ -16,6 +16,8 @@ export const queryKeys = {
     company: (slug: string) => ['company', slug] as const,
     activities: (scope: string) => ['activities', scope] as const,
     schedule: (start?: string, end?: string) => ['schedule', start, end] as const,
+    branches: ['branches'] as const,
+    branch: (id: string) => ['branch', id] as const,
 };
 
 // --- QUERIES ---
@@ -137,6 +139,31 @@ export function useActivitiesQuery(scope: 'company' | 'user' = 'company', limit:
     });
 }
 
+export function useBranchesQuery() {
+    return useQuery({
+        queryKey: queryKeys.branches,
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/branches`, { headers: getAuthHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch branches');
+            const result = await res.json();
+            return result.data as any[];
+        },
+    });
+}
+
+export function useBranchQuery(id: string) {
+    return useQuery({
+        queryKey: queryKeys.branch(id),
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/branches?id=${id}`, { headers: getAuthHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch branch details');
+            const result = await res.json();
+            return result.data;
+        },
+        enabled: !!id,
+    });
+}
+
 
 // --- MUTATIONS ---
 
@@ -205,6 +232,7 @@ export function useCreateEmployeeMutation() {
             role: string;
             department: string;
             position?: string;
+            branchId?: string;
         }) => {
             const res = await fetch(`${API_BASE}/users/create`, {
                 method: 'POST',
@@ -365,6 +393,83 @@ export function useCreateEventMutation() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['schedule'] });
+        },
+    });
+}
+
+export function useCreateBranchMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (branch: { name: string; location?: string; address?: string }) => {
+            const res = await fetch(`${API_BASE}/branches`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(branch),
+            });
+            if (!res.ok) throw new Error('Failed to create branch');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.branches });
+        },
+    });
+}
+
+export function useUpdateBranchMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (vars: { branchId: string; name?: string; location?: string; address?: string }) => {
+            const res = await fetch(`${API_BASE}/branches`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(vars),
+            });
+            if (!res.ok) throw new Error('Failed to update branch');
+            return res.json();
+        },
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.branches });
+            queryClient.invalidateQueries({ queryKey: queryKeys.branch(variables.branchId) });
+        },
+    });
+}
+
+export function useDeleteBranchMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const res = await fetch(`${API_BASE}/branches?id=${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+            if (!res.ok) throw new Error('Failed to delete branch');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.branches });
+        },
+    });
+}
+
+export function useAssignBranchMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (vars: { userId: string; branchId: string | null }) => {
+            const res = await fetch(`${API_BASE}/branches`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(vars),
+            });
+            if (!res.ok) throw new Error('Failed to assign branch');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.users });
+            queryClient.invalidateQueries({ queryKey: queryKeys.branches });
         },
     });
 }

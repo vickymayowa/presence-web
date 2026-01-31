@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
                 companyId: currentUser.companyId
             },
             include: {
-                company: true
+                company: true,
+                branch: true
             },
             orderBy: {
                 createdAt: 'desc'

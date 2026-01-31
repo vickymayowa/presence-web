@@ -81,6 +81,7 @@ model Company {
   logo           String?
   users          User[]
   departments    Department[]
+  branches       Branch[]
   checkInWindows CheckInWindow[]
   activityLogs   ActivityLog[]
   createdAt      DateTime        @default(now())
@@ -102,6 +103,9 @@ model User {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
+
+  branchId  String?
+  branch    Branch? @relation(fields: [branchId], references: [id])
 
   managerId    String?
   manager      User?   @relation("UserManager", fields: [managerId], references: [id])
@@ -127,6 +131,23 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Branch {
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  address   String?
+  
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  
+  users     User[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name])
 }
 
 model PushSubscription {

@@ -22,6 +22,16 @@ export interface User {
   joinedAt: string;
   phone?: string;
   companyId: string;
+  branchId?: string;
+  branch?: Branch;
+}
+
+export interface Branch {
+  id: string;
+  name: string;
+  location?: string;
+  address?: string;
+  companyId: string;
 }
 
 export interface AttendanceRecord {
