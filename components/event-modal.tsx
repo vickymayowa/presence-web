@@ -33,6 +33,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { useCreateEventMutation } from "@/lib/queries/presence-queries"
 import { toast } from "sonner"
+import { format } from "date-fns"
 
 const eventSchema = z.object({
     title: z.string().min(2, "Title must be at least 2 characters"),
@@ -118,7 +119,7 @@ export function EventModal({ isOpen, onClose, selectedDate }: EventModalProps) {
                         <FormField
                             control={form.control}
                             name="title"
-                            render={({ field }) => (
+                            render={({ field }: { field: ControllerRenderProps<EventFormValues, "title"> }) => (
                                 <FormItem>
                                     <FormLabel>Event Title</FormLabel>
                                     <FormControl>
@@ -133,7 +134,7 @@ export function EventModal({ isOpen, onClose, selectedDate }: EventModalProps) {
                             <FormField
                                 control={form.control}
                                 name="date"
-                                render={({ field }) => (
+                                render={({ field }: { field: ControllerRenderProps<EventFormValues, "date"> }) => (
                                     <FormItem>
                                         <FormLabel>Date</FormLabel>
                                         <FormControl>
@@ -146,7 +147,7 @@ export function EventModal({ isOpen, onClose, selectedDate }: EventModalProps) {
                             <FormField
                                 control={form.control}
                                 name="type"
-                                render={({ field }) => (
+                                render={({ field }: { field: ControllerRenderProps<EventFormValues, "type"> }) => (
                                     <FormItem>
                                         <FormLabel>Event Type</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -172,7 +173,7 @@ export function EventModal({ isOpen, onClose, selectedDate }: EventModalProps) {
                             <FormField
                                 control={form.control}
                                 name="startTime"
-                                render={({ field }) => (
+                                render={({ field }: { field: ControllerRenderProps<EventFormValues, "startTime"> }) => (
                                     <FormItem>
                                         <FormLabel>Start Time</FormLabel>
                                         <FormControl>
@@ -185,7 +186,7 @@ export function EventModal({ isOpen, onClose, selectedDate }: EventModalProps) {
                             <FormField
                                 control={form.control}
                                 name="endTime"
-                                render={({ field }) => (
+                                render={({ field }: { field: ControllerRenderProps<EventFormValues, "endTime"> }) => (
                                     <FormItem>
                                         <FormLabel>End Time</FormLabel>
                                         <FormControl>
@@ -200,7 +201,7 @@ export function EventModal({ isOpen, onClose, selectedDate }: EventModalProps) {
                         <FormField
                             control={form.control}
                             name="mode"
-                            render={({ field }) => (
+                            render={({ field }: { field: ControllerRenderProps<EventFormValues, "mode"> }) => (
                                 <FormItem>
                                     <FormLabel>Work Mode</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -223,7 +224,7 @@ export function EventModal({ isOpen, onClose, selectedDate }: EventModalProps) {
                         <FormField
                             control={form.control}
                             name="location"
-                            render={({ field }) => (
+                            render={({ field }: { field: ControllerRenderProps<EventFormValues, "location"> }) => (
                                 <FormItem>
                                     <FormLabel>Location / Meeting Link</FormLabel>
                                     <FormControl>
@@ -237,7 +238,7 @@ export function EventModal({ isOpen, onClose, selectedDate }: EventModalProps) {
                         <FormField
                             control={form.control}
                             name="description"
-                            render={({ field }) => (
+                            render={({ field }: { field: ControllerRenderProps<EventFormValues, "description"> }) => (
                                 <FormItem>
                                     <FormLabel>Description (Optional)</FormLabel>
                                     <FormControl>

@@ -12,7 +12,7 @@ export class CompanyService {
         todayEnd.setHours(23, 59, 59, 999);
 
         // 1. Fetch main stats in parallel
-        const [totalEmployees, presentToday, onLeave, pendingRequests, departmentCount, remote] = await Promise.all([
+        const [totalEmployees, presentToday, onLeave, pendingRequests, departmentCount, remote, lateArrivals] = await Promise.all([
             prisma.user.count({ where: { companyId } }),
             prisma.attendanceRecord.count({
                 where: {
@@ -37,6 +37,18 @@ export class CompanyService {
                     user: { companyId },
                     date: { gte: todayStart, lte: todayEnd },
                     workMode: 'remote'
+                }
+            }),
+            prisma.attendanceRecord.findMany({
+                where: {
+                    user: { companyId },
+                    date: { gte: todayStart, lte: todayEnd },
+                    status: 'late'
+                },
+                include: {
+                    user: {
+                        select: { firstName: true, lastName: true, avatar: true, department: true }
+                    }
                 }
             })
         ]);
@@ -133,7 +145,8 @@ export class CompanyService {
             attendanceRate,
             performanceIndex: parseFloat(performanceIndex.toFixed(1)),
             trendData,
-            departmentStats
+            departmentStats,
+            lateArrivals
         };
     }
 }
