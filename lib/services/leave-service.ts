@@ -59,6 +59,15 @@ export class LeaveService {
             actionUrl: '/dashboard/leaves'
         }).catch(e => console.error("Broadcast failed", e));
 
+        // Log Activity
+        await activityService.logActivity({
+            userId: userId,
+            companyId: leave.user.companyId,
+            action: "REQUEST_LEAVE",
+            description: `Requested ${data.type} leave`,
+            metadata: { leaveId: leave.id, startDate: data.startDate, endDate: data.endDate }
+        }).catch(e => console.error("Activity Log failed", e));
+
         return leave;
     }
 
@@ -83,6 +92,15 @@ export class LeaveService {
             type: 'leave',
             actionUrl: '/dashboard/leaves'
         }).catch(e => console.error("Notification failed", e));
+
+        // Log Activity
+        await activityService.logActivity({
+            userId: approverId,
+            companyId: leave.user.companyId,
+            action: `LEAVE_${status.toUpperCase()}`,
+            description: `${status.charAt(0).toUpperCase() + status.slice(1)} leave request for ${leave.user.firstName} ${leave.user.lastName}`,
+            metadata: { leaveId: leave.id }
+        }).catch(e => console.error("Activity Log failed", e));
 
         return leave;
     }

@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
             message,
             type,
             role,
-            actionUrl: actionUrl || "/dashboard"
+            actionUrl: actionUrl || "/dashboard",
+            broadcasterId: session.id
         });
 
         return ApiResponse.success({ success: true }, "Broadcast sent successfully");

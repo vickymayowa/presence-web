@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import webpush from "web-push";
+import { activityService } from "./activity-service";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
@@ -87,6 +88,7 @@ export class NotificationService {
         type: 'announcement' | 'reminder' | 'leave' | 'attendance' | 'info';
         actionUrl?: string;
         role?: string;
+        broadcasterId?: string;
     }) {
         const users = await prisma.user.findMany({
             where: {
@@ -96,7 +98,7 @@ export class NotificationService {
             select: { id: true }
         });
 
-        return Promise.all(users.map(user =>
+        const promises = users.map(user =>
             this.createNotification({
                 userId: user.id,
                 title: data.title,
@@ -104,7 +106,20 @@ export class NotificationService {
                 type: data.type,
                 actionUrl: data.actionUrl
             })
-        ));
+        );
+
+        // Log Activity
+        if (data.broadcasterId) {
+            promises.push(activityService.logActivity({
+                userId: data.broadcasterId,
+                companyId: data.companyId,
+                action: "BROADCAST_ANNOUNCEMENT",
+                description: `Broadcasted ${data.type}: ${data.title}`,
+                metadata: { targetRole: data.role || 'all', messageSnippet: data.message.substring(0, 50) }
+            }) as any);
+        }
+
+        return Promise.all(promises);
     }
 
     async subscribeToPush(userId: string, subscription: any) {
