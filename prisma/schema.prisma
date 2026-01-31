@@ -83,6 +83,7 @@ model Company {
   departments    Department[]
   branches       Branch[]
   checkInWindows CheckInWindow[]
+  announcements  Announcement[]
   activityLogs   ActivityLog[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -126,6 +127,8 @@ model User {
 
   organizedEvents  CalendarEvent[]   @relation("EventOrganizer")
   attendingEvents  CalendarEvent[]   @relation("EventAttendees")
+
+  announcements    Announcement[]
 
   sessionId String?
 
@@ -330,4 +333,25 @@ model CalendarEvent {
 
   @@index([companyId])
   @@index([startTime])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String   @db.Text
+  type      String   @default("general") // "general", "urgent", "update"
+  
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  
+  isActive  Boolean  @default(true)
+  expiresAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
 }

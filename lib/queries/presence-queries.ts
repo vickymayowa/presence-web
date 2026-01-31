@@ -18,6 +18,7 @@ export const queryKeys = {
     schedule: (start?: string, end?: string) => ['schedule', start, end] as const,
     branches: ['branches'] as const,
     branch: (id: string) => ['branch', id] as const,
+    announcements: ['announcements'] as const,
 };
 
 // --- QUERIES ---
@@ -470,6 +471,40 @@ export function useAssignBranchMutation() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.users });
             queryClient.invalidateQueries({ queryKey: queryKeys.branches });
+        },
+    });
+}
+
+export function useAnnouncementsQuery() {
+    return useQuery({
+        queryKey: queryKeys.announcements,
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/announcements`, { headers: getAuthHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch announcements');
+            const result = await res.json();
+            return result.data as any[];
+        },
+    });
+}
+
+export function useCreateAnnouncementMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (announcement: { title: string; content: string; type?: string; expiresAt?: string }) => {
+            const res = await fetch(`${API_BASE}/announcements`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(announcement),
+            });
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || 'Failed to post announcement');
+            }
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.announcements });
         },
     });
 }

@@ -118,51 +118,6 @@ export default function LeavesPage() {
 
                 {/* Main Content Areas */}
                 <div className="lg:col-span-2 space-y-8">
-                    {user.role !== 'staff' && pendingApprovals.length > 0 && (
-                        <div className="space-y-4">
-                            <h3 className="text-xl font-serif">Pending Approvals</h3>
-                            <div className="grid gap-4">
-                                {pendingApprovals.map(leave => {
-                                    const leaveUser = getUserById(leave.userId)
-                                    return (
-                                        <Card key={leave.id} className="border-primary/20 bg-primary/2">
-                                            <CardContent className="p-4 flex items-center justify-between gap-4">
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar>
-                                                        <AvatarImage src={leaveUser?.avatar || undefined} />
-                                                        <AvatarFallback>{leaveUser?.firstName?.[0]}{leaveUser?.lastName?.[0]}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <p className="text-sm font-medium">{leaveUser?.firstName} {leaveUser?.lastName}</p>
-                                                        <p className="text-xs text-muted-foreground">{leave.type} • {new Date(leave.startDate).toLocaleDateString()} to {new Date(leave.endDate).toLocaleDateString()}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="rounded-lg h-8 border-red-200 text-red-600 hover:bg-red-50"
-                                                        disabled={updateLeave.isPending}
-                                                        onClick={() => handleUpdateStatus(leave.id, 'rejected')}
-                                                    >
-                                                        Reject
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        className="rounded-lg h-8 bg-green-600 hover:bg-green-700 text-white border-0"
-                                                        disabled={updateLeave.isPending}
-                                                        onClick={() => handleUpdateStatus(leave.id, 'approved')}
-                                                    >
-                                                        Approve
-                                                    </Button>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
