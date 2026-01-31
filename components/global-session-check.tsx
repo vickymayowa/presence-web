@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useSessionCheck } from "@/hooks/use-session-check"
-import { SessionLogoutModal } from "@/components/session-logout-modal"
+import SessionLogoutModal from "@/components/session-logout-modal"
 import { useAuth } from "@/lib/auth-context"
 
 export function GlobalSessionCheck() {
