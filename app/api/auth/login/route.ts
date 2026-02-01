@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
         return response;
 
     } catch (error: any) {
+        console.log(error)
         if (process.env.NODE_ENV === 'development') {
             console.error("[Login Error]:", error);
         }
