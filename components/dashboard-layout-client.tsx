@@ -12,10 +12,40 @@ import { Bell } from "lucide-react"
 import { GlobalSearch } from "@/components/global-search"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { NotificationCenter } from "@/components/notification-center"
+import { useAuth } from "@/lib/auth-context"
+import { ShieldCheck } from "lucide-react"
 
 export function DashboardLayoutClient({ children }: { children: React.ReactNode }) {
+  const { isLoading, user } = useAuth()
   const now = new Date()
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening"
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-xl animate-pulse" />
+            <div className="relative flex aspect-square size-20 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl">
+              <ShieldCheck className="size-10 animate-bounce" />
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <h2 className="font-serif text-3xl tracking-tight">Presence</h2>
+            <div className="flex items-center gap-2">
+              <div className="size-1 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+              <div className="size-1 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+              <div className="size-1 rounded-full bg-primary animate-bounce" />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // If not loading but no user, the AuthProvider's router.replace will handle it,
+  // but we should still return null to avoid rendering the dashboard layout
+  if (!user) return null
 
   return (
     <SidebarProvider>
