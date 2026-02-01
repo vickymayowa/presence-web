@@ -47,6 +47,6 @@ export async function POST(req: NextRequest) {
             return ApiResponse.error(message, 401);
         }
 
-        return ApiResponse.error(message, 500);
+        // return ApiResponse.error(message, 500);
     }
 }
