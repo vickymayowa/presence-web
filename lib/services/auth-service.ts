@@ -185,6 +185,37 @@ export class AuthService {
     }
 
     /**
+     * Terminate user session and clear sessionId in DB.
+     */
+    async logout(userId: string) {
+        try {
+            await prisma.user.update({
+                where: { id: userId },
+                data: { sessionId: null }
+            });
+
+            // Log Activity (fetch user info first for companyId)
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { id: true, companyId: true }
+            });
+
+            if (user) {
+                await activityService.logActivity({
+                    userId: user.id,
+                    companyId: user.companyId,
+                    action: "LOGOUT",
+                    description: "User logged out of the system"
+                });
+            }
+            return { success: true };
+        } catch (error) {
+            console.error("[Logout Error]:", error);
+            return { success: false, error: "Logout failed" };
+        }
+    }
+
+    /**
      * Helper to generate a standardized JWT token and unique session ID.
      */
     private generateToken(user: any, sessionId: string) {
@@ -199,6 +230,17 @@ export class AuthService {
             JWT_SECRET,
             { expiresIn: "7d" }
         );
+    }
+
+    /**
+     * Decode and verify a JWT token.
+     */
+    verifyToken(token: string) {
+        try {
+            return jwt.verify(token, JWT_SECRET) as any;
+        } catch {
+            return null;
+        }
     }
 
     /**
