@@ -15,40 +15,24 @@ import {
     Plus
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
+import { useScheduleQuery } from "@/lib/queries/presence-queries"
+import { EventModal } from "@/components/event-modal"
+import { format, isSameDay, startOfMonth, endOfMonth } from "date-fns"
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const fullDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
-// Mock schedule data
-const mockEvents: Record<string, { time: string; title: string; type: string; mode: string }[]> = {
-    'Mon': [
-        { time: '09:00', title: 'Morning Standup', type: 'meeting', mode: 'remote' },
-        { time: '11:00', title: 'Design Review', type: 'meeting', mode: 'office' },
-        { time: '14:00', title: 'Sprint Planning', type: 'meeting', mode: 'office' },
-    ],
-    'Tue': [
-        { time: '10:00', title: 'Client Call', type: 'meeting', mode: 'remote' },
-        { time: '15:00', title: '1:1 with Manager', type: 'meeting', mode: 'office' },
-    ],
-    'Wed': [
-        { time: '09:00', title: 'Morning Standup', type: 'meeting', mode: 'remote' },
-        { time: '13:00', title: 'Lunch & Learn', type: 'event', mode: 'office' },
-    ],
-    'Thu': [
-        { time: '09:00', title: 'Morning Standup', type: 'meeting', mode: 'remote' },
-        { time: '11:00', title: 'Code Review', type: 'meeting', mode: 'office' },
-        { time: '16:00', title: 'Team Retrospective', type: 'meeting', mode: 'office' },
-    ],
-    'Fri': [
-        { time: '09:00', title: 'Morning Standup', type: 'meeting', mode: 'remote' },
-        { time: '14:00', title: 'Weekly Wrap-up', type: 'meeting', mode: 'remote' },
-    ],
-}
 
 export default function SchedulePage() {
     const { user } = useAuth()
     const [currentDate, setCurrentDate] = React.useState(new Date())
     const [selectedDay, setSelectedDay] = React.useState<number | null>(null)
+    const [isEventModalOpen, setIsEventModalOpen] = React.useState(false)
+
+    // Fetch real events for the current month
+    const { data: events = [], isLoading } = useScheduleQuery(
+        startOfMonth(currentDate),
+        endOfMonth(currentDate)
+    )
 
     if (!user) return null
 
@@ -89,16 +73,22 @@ export default function SchedulePage() {
 
     // Get selected day's full date and day name
     const getSelectedDayInfo = () => {
-        if (selectedDay === null) return null
-        const date = new Date(year, month, selectedDay)
+        const day = selectedDay || today.getDate()
+        const date = new Date(year, month, day)
         return {
+            date,
             dayName: fullDays[date.getDay()],
             shortDay: daysOfWeek[date.getDay()],
-            formatted: date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+            formatted: format(date, 'MMMM do, yyyy')
         }
     }
 
     const selectedDayInfo = getSelectedDayInfo()
+
+    // Filter events for selected day
+    const dayEvents = events.filter(event =>
+        isSameDay(new Date(event.startTime), selectedDayInfo.date)
+    )
 
     return (
         <div className="space-y-8">
@@ -112,23 +102,25 @@ export default function SchedulePage() {
                         View and manage your work schedule
                     </p>
                 </div>
-                <Button className="rounded-xl">
-                    <Plus className="size-4 mr-2" />
-                    Add Event
-                </Button>
+                {user.role !== 'staff' && (
+                    <Button className="rounded-xl shadow-lg shadow-primary/20" onClick={() => setIsEventModalOpen(true)}>
+                        <Plus className="size-4 mr-2" />
+                        Add Event
+                    </Button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Calendar */}
-                <Card className="lg:col-span-2 border-border/30">
-                    <CardHeader className="border-b bg-secondary/10">
+                <Card className="lg:col-span-2 border-border/30 shadow-sm overflow-hidden">
+                    <CardHeader className="border-b bg-secondary/5">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-2xl font-serif">{monthName}</CardTitle>
                             <div className="flex items-center gap-2">
                                 <Button variant="outline" size="icon" className="size-8 rounded-lg" onClick={() => navigateMonth(-1)}>
                                     <ChevronLeft className="size-4" />
                                 </Button>
-                                <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setCurrentDate(new Date())}>
+                                <Button variant="outline" size="sm" className="rounded-lg px-4" onClick={() => setCurrentDate(new Date())}>
                                     Today
                                 </Button>
                                 <Button variant="outline" size="icon" className="size-8 rounded-lg" onClick={() => navigateMonth(1)}>
@@ -141,7 +133,7 @@ export default function SchedulePage() {
                         {/* Day Headers */}
                         <div className="grid grid-cols-7 gap-1 mb-2">
                             {daysOfWeek.map(day => (
-                                <div key={day} className="text-center text-xs font-bold uppercase tracking-widest text-muted-foreground/60 py-2">
+                                <div key={day} className="text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 py-2">
                                     {day}
                                 </div>
                             ))}
@@ -150,27 +142,34 @@ export default function SchedulePage() {
                         {/* Calendar Grid */}
                         <div className="grid grid-cols-7 gap-1">
                             {calendarDays.map((day, index) => {
-                                const dayOfWeek = (firstDayOfMonth + (day || 1) - 1) % 7
-                                const hasEvents = day && mockEvents[daysOfWeek[dayOfWeek]]?.length > 0
-                                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                                if (day === null) return <div key={`empty-${index}`} className="aspect-square" />
+
+                                const date = new Date(year, month, day)
+                                const dayEvents = events.filter(e => isSameDay(new Date(e.startTime), date))
+                                const isSelected = selectedDay === day || (selectedDay === null && isToday(day))
+                                const isCurrentDay = isToday(day)
 
                                 return (
                                     <button
                                         key={index}
-                                        onClick={() => day && setSelectedDay(day)}
-                                        disabled={!day}
+                                        onClick={() => setSelectedDay(day)}
                                         className={`
-                      aspect-square p-2 rounded-xl text-sm font-medium transition-all relative
-                      ${!day ? 'invisible' : ''}
-                      ${isToday(day || 0) ? 'bg-primary text-primary-foreground' : ''}
-                      ${selectedDay === day && !isToday(day || 0) ? 'bg-secondary ring-2 ring-primary' : ''}
-                      ${!isToday(day || 0) && selectedDay !== day ? 'hover:bg-secondary/50' : ''}
-                      ${isWeekend && !isToday(day || 0) ? 'text-muted-foreground/50' : ''}
-                    `}
+                                            aspect-square p-2 rounded-2xl text-sm font-medium transition-all relative group
+                                            ${isCurrentDay ? 'bg-primary text-primary-foreground shadow-md' : ''}
+                                            ${isSelected && !isCurrentDay ? 'bg-secondary ring-2 ring-primary/20' : ''}
+                                            ${!isCurrentDay && !isSelected ? 'hover:bg-secondary/50' : ''}
+                                        `}
                                     >
-                                        {day}
-                                        {hasEvents && !isToday(day || 0) && (
-                                            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+                                        <span className="relative z-10">{day}</span>
+                                        {dayEvents.length > 0 && (
+                                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5">
+                                                {dayEvents.slice(0, 3).map((_, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`w-1 h-1 rounded-full ${isCurrentDay ? 'bg-primary-foreground/60' : 'bg-primary/60'}`}
+                                                    />
+                                                ))}
+                                            </div>
                                         )}
                                     </button>
                                 )
@@ -180,66 +179,89 @@ export default function SchedulePage() {
                 </Card>
 
                 {/* Schedule for Selected Day */}
-                <Card className="border-border/30">
-                    <CardHeader className="border-b bg-secondary/10">
+                <Card className="border-border/30 shadow-sm overflow-hidden flex flex-col">
+                    <CardHeader className="border-b bg-secondary/5">
                         <CardTitle className="text-xl font-serif">
-                            {selectedDayInfo ? selectedDayInfo.dayName : "Today's Schedule"}
+                            {selectedDayInfo.dayName}
                         </CardTitle>
                         <CardDescription>
-                            {selectedDayInfo ? selectedDayInfo.formatted : today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            {selectedDayInfo.formatted}
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="p-0">
-                        {(() => {
-                            const dayKey = selectedDayInfo?.shortDay || daysOfWeek[today.getDay()]
-                            const events = mockEvents[dayKey] || []
+                    <CardContent className="p-0 flex-1 overflow-auto">
+                        {isLoading ? (
+                            <div className="p-12 text-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-4"></div>
+                                <p className="text-sm text-muted-foreground">Loading schedule...</p>
+                            </div>
+                        ) : dayEvents.length === 0 ? (
+                            <div className="p-12 text-center">
+                                <div className="w-12 h-12 bg-secondary/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Coffee className="size-6 text-muted-foreground/40" />
+                                </div>
+                                <p className="text-sm text-muted-foreground font-light italic">No events scheduled for this day</p>
+                                {user.role !== 'staff' && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="mt-4 rounded-xl text-primary"
+                                        onClick={() => setIsEventModalOpen(true)}
+                                    >
+                                        <Plus className="size-3 mr-2" /> Add first event
+                                    </Button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-border/20">
+                                {dayEvents.map((event, i) => {
+                                    const Icon = getEventIcon(event.type)
+                                    const startTime = format(new Date(event.startTime), 'p')
+                                    const isRemote = event.mode === 'remote'
 
-                            if (events.length === 0) {
-                                return (
-                                    <div className="p-8 text-center">
-                                        <Coffee className="size-8 mx-auto text-muted-foreground/30 mb-3" />
-                                        <p className="text-sm text-muted-foreground">No events scheduled</p>
-                                    </div>
-                                )
-                            }
-
-                            return (
-                                <div className="divide-y divide-border/30">
-                                    {events.map((event, i) => {
-                                        const Icon = getEventIcon(event.type)
-                                        return (
-                                            <div key={i} className="p-4 hover:bg-secondary/20 transition-colors">
-                                                <div className="flex items-start gap-3">
-                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${event.mode === 'remote' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
-                                                        }`}>
-                                                        <Icon className="size-5" />
+                                    return (
+                                        <div key={event.id || i} className="p-5 hover:bg-secondary/10 transition-colors group">
+                                            <div className="flex items-start gap-4">
+                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${isRemote ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'
+                                                    }`}>
+                                                    <Icon className="size-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold text-sm truncate">{event.title}</p>
+                                                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-medium bg-secondary/40 px-2 py-0.5 rounded-full">
+                                                            <Clock className="size-3" />
+                                                            {startTime}
+                                                        </span>
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className={`text-[9px] uppercase font-bold border-none ${isRemote ? 'bg-blue-100/50 text-blue-700' : 'bg-green-100/50 text-green-700'
+                                                                }`}
+                                                        >
+                                                            {event.mode}
+                                                        </Badge>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <p className="font-medium">{event.title}</p>
-                                                        <div className="flex items-center gap-3 mt-1">
-                                                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                                <Clock className="size-3" />
-                                                                {event.time}
-                                                            </span>
-                                                            <Badge
-                                                                variant="secondary"
-                                                                className={`text-[9px] uppercase font-bold ${event.mode === 'remote' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
-                                                                    }`}
-                                                            >
-                                                                {event.mode}
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
+                                                    {event.location && (
+                                                        <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+                                                            <MapPin className="size-3" />
+                                                            {event.location}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
-                                        )
-                                    })}
-                                </div>
-                            )
-                        })()}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>
+
+            <EventModal
+                isOpen={isEventModalOpen}
+                onClose={() => setIsEventModalOpen(false)}
+                selectedDate={selectedDayInfo.date}
+            />
 
             {/* Weekly Work Mode */}
             <Card className="border-border/30">

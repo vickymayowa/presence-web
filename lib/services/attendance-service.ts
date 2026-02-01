@@ -6,11 +6,40 @@ export class AttendanceService {
     /**
      * Get all attendance records for a company.
      */
-    async getAttendanceRecords(companyId: string) {
+    /**
+     * Get all attendance records for a company with optional filters.
+     */
+    async getAttendanceRecords(companyId: string, filters?: { date?: Date, startDate?: Date, endDate?: Date, userId?: string }) {
+        const where: any = {
+            user: { companyId }
+        };
+
+        if (filters?.userId) {
+            where.userId = filters.userId;
+        }
+
+        if (filters?.date) {
+            const start = new Date(filters.date);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(filters.date);
+            end.setHours(23, 59, 59, 999);
+            where.date = {
+                gte: start,
+                lte: end
+            };
+        } else if (filters?.startDate && filters?.endDate) {
+            const start = new Date(filters.startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(filters.endDate);
+            end.setHours(23, 59, 59, 999);
+            where.date = {
+                gte: start,
+                lte: end
+            };
+        }
+
         return prisma.attendanceRecord.findMany({
-            where: {
-                user: { companyId }
-            },
+            where,
             include: {
                 user: {
                     select: {

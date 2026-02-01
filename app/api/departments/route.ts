@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const department = await departmentService.createDepartment({
             ...body,
-            companyId: session.companyId
+            companyId: session.companyId,
+            createdById: session.id
         });
         return ApiResponse.success(department);
     } catch (error: any) {

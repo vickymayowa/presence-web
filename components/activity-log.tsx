@@ -10,7 +10,12 @@ import {
     LogOut,
     Eye,
     UserPlus,
-    Activity
+    Activity,
+    Building2,
+    Calendar,
+    CheckCircle2,
+    XCircle,
+    Megaphone
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -22,18 +27,19 @@ interface ActivityLogProps {
 
 const getActivityIcon = (action: string) => {
     switch (action) {
-        case 'LOGIN':
-            return LogIn
-        case 'REGISTER':
-            return UserPlus
-        case 'CHECK_IN':
-            return LogIn
-        case 'CHECK_OUT':
-            return LogOut
-        case 'PAGE_VIEW':
-            return Eye
-        default:
-            return Activity
+        case 'LOGIN': return LogIn
+        case 'REGISTER': return UserPlus
+        case 'CREATE_USER': return UserPlus
+        case 'CHECK_IN': return LogIn
+        case 'CHECK_OUT': return LogOut
+        case 'PAGE_VIEW': return Eye
+        case 'CREATE_DEPARTMENT': return Building2
+        case 'REQUEST_LEAVE': return Calendar
+        case 'CREATE_EVENT': return Calendar
+        case 'LEAVE_APPROVED': return CheckCircle2
+        case 'LEAVE_REJECTED': return XCircle
+        case 'BROADCAST_ANNOUNCEMENT': return Megaphone
+        default: return Activity
     }
 }
 
@@ -41,12 +47,20 @@ const getActivityColor = (action: string) => {
     switch (action) {
         case 'LOGIN':
         case 'REGISTER':
+        case 'CREATE_USER':
             return 'bg-blue-100 text-blue-700 border-blue-200'
         case 'CHECK_IN':
+        case 'LEAVE_APPROVED':
             return 'bg-green-100 text-green-700 border-green-200'
         case 'CHECK_OUT':
+        case 'REQUEST_LEAVE':
             return 'bg-orange-100 text-orange-700 border-orange-200'
+        case 'LEAVE_REJECTED':
+            return 'bg-red-100 text-red-700 border-red-200'
         case 'PAGE_VIEW':
+        case 'CREATE_DEPARTMENT':
+        case 'BROADCAST_ANNOUNCEMENT':
+        case 'CREATE_EVENT':
             return 'bg-purple-100 text-purple-700 border-purple-200'
         default:
             return 'bg-gray-100 text-gray-700 border-gray-200'

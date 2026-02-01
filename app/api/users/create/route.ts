@@ -4,6 +4,7 @@ import { ApiResponse } from "@/lib/utils/api-response";
 import bcrypt from "bcryptjs";
 import { getSession } from "@/lib/utils/auth-utils";
 import { UserRole } from "@/lib/types";
+import { activityService } from "@/lib/services/activity-service";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { firstName, lastName, email, password, role, department, position } = body;
+        const { firstName, lastName, email, password, role, department, position, branchId } = body;
 
         // Validate required fields
         if (!firstName || !lastName || !email || !password || !role || !department) {
@@ -62,15 +63,30 @@ export async function POST(req: NextRequest) {
                 role,
                 department: department.trim(),
                 position: position?.trim() || getDefaultPosition(role),
-                companyId: currentUser.companyId
+                companyId: currentUser.companyId,
+                branchId: branchId || null
             },
             include: {
-                company: true
+                company: true,
+                branch: true
             }
         });
 
         // Sanitize user (remove password)
         const { password: _, ...sanitizedUser } = newUser;
+
+        // Log activity
+        await activityService.logActivity({
+            userId: currentUser.id,
+            companyId: currentUser.companyId,
+            action: "CREATE_USER",
+            description: `Added new employee: ${firstName} ${lastName}`,
+            metadata: {
+                newUserId: newUser.id,
+                role,
+                department
+            }
+        });
 
         return ApiResponse.success(
             sanitizedUser,
