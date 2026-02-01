@@ -22,6 +22,8 @@ import {
     Briefcase,
     LogOut,
     User,
+    Megaphone,
+    History,
 } from "lucide-react"
 import {
     Sidebar,
@@ -56,6 +58,7 @@ const navigationConfig: Record<UserRole, { general: NavItem[]; admin?: NavItem[]
             { icon: Clock, label: "Attendance", href: "/dashboard/attendance" },
             { icon: Calendar, label: "My Schedule", href: "/dashboard/schedule" },
             { icon: FileText, label: "Leave Requests", href: "/dashboard/leaves" },
+            { icon: Megaphone, label: "Announcements", href: "/dashboard/announcements" },
             { icon: User, label: "My Profile", href: "/dashboard/profile" },
         ],
     },
@@ -65,6 +68,7 @@ const navigationConfig: Record<UserRole, { general: NavItem[]; admin?: NavItem[]
             { icon: Clock, label: "Attendance", href: "/dashboard/attendance" },
             { icon: Calendar, label: "Schedule", href: "/dashboard/schedule" },
             { icon: FileText, label: "Leave Requests", href: "/dashboard/leaves" },
+            { icon: Megaphone, label: "Announcements", href: "/dashboard/announcements" },
         ],
         admin: [
             { icon: Users, label: "My Team", href: "/dashboard/team" },
@@ -80,9 +84,11 @@ const navigationConfig: Record<UserRole, { general: NavItem[]; admin?: NavItem[]
             { icon: Users, label: "Employees", href: "/dashboard/employees" },
             { icon: Clock, label: "Attendance", href: "/dashboard/attendance" },
             { icon: FileText, label: "Leave Management", href: "/dashboard/leaves" },
+            { icon: Megaphone, label: "Announcements", href: "/dashboard/announcements" },
         ],
         admin: [
             { icon: Building2, label: "Departments", href: "/dashboard/departments" },
+            { icon: MapPin, label: "Branches", href: "/dashboard/branches" },
             { icon: BarChart3, label: "Reports", href: "/dashboard/reports" },
             { icon: Clock, label: "Shift Sections", href: "/dashboard/settings/checkin-windows" },
             { icon: ShieldCheck, label: "Compliance", href: "/dashboard/compliance" },
@@ -94,7 +100,9 @@ const navigationConfig: Record<UserRole, { general: NavItem[]; admin?: NavItem[]
             { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
             { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
             { icon: Building2, label: "Departments", href: "/dashboard/departments" },
+            { icon: MapPin, label: "Branches", href: "/dashboard/branches" },
             { icon: Users, label: "All Employees", href: "/dashboard/employees" },
+            { icon: Megaphone, label: "Announcements", href: "/dashboard/announcements" },
         ],
         admin: [
             { icon: Briefcase, label: "Executive View", href: "/dashboard/executive" },
